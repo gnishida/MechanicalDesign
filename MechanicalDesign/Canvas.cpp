@@ -21,10 +21,14 @@ glm::vec2 circleCircleIntersection(const glm::vec2& center1, float radius1, cons
 		std::cout << "radius1: " << radius1 << std::endl;
 		std::cout << "radius2: " << radius2 << std::endl;
 	}
-	//if (d > radius1 + radius2) throw "No intersection";
+	if (d > radius1 + radius2) {
+		throw "No intersection";
+	}
+	/*
 	if (d > radius1 + radius2) {
 		return (center1 + center2) * 0.5f;
 	}
+	*/
 
 	float a = (radius1 * radius1 - radius2 * radius2 + d * d) / d / 2.0f;
 	float h = sqrtf(radius1 * radius1 - a * a);
@@ -42,17 +46,19 @@ glm::vec2 Gear::getLinkEndPosition() {
 void Gear::draw(QPainter& painter) {
 	painter.setPen(QPen(QColor(255, 0, 0), 1));
 
-	int num_split = radius * 0.5;
+	painter.drawEllipse(QPoint(center.x, center.y), 4, 4);
+
+	int num_split = radius * 0.4;
 	for (int i = 0; i < num_split; ++i) {
 		float theta1 = i * 3.141592653 * 2.0 / num_split;
 		float theta2 = (i + 0.5) * 3.141592653 * 2.0 / num_split;
 		float theta3 = (i + 1) * 3.141592653 * 2.0 / num_split;
 
-		glm::vec2 p1 = center + glm::vec2(cos(theta1), sin(theta1)) * (radius + 4);
-		glm::vec2 p2 = center + glm::vec2(cos(theta2), sin(theta2)) * (radius + 4);
-		glm::vec2 p3 = center + glm::vec2(cos(theta2), sin(theta2)) * radius;
-		glm::vec2 p4 = center + glm::vec2(cos(theta3), sin(theta3)) * radius;
-		glm::vec2 p5 = center + glm::vec2(cos(theta3), sin(theta3)) * (radius + 4);
+		glm::vec2 p1 = center + glm::vec2(cos(phase + theta1), sin(phase + theta1)) * (radius + 5);
+		glm::vec2 p2 = center + glm::vec2(cos(phase + theta2), sin(phase + theta2)) * (radius + 5);
+		glm::vec2 p3 = center + glm::vec2(cos(phase + theta2), sin(phase + theta2)) * radius;
+		glm::vec2 p4 = center + glm::vec2(cos(phase + theta3), sin(phase + theta3)) * radius;
+		glm::vec2 p5 = center + glm::vec2(cos(phase + theta3), sin(phase + theta3)) * (radius + 5);
 
 		painter.drawLine(p1.x, p1.y, p2.x, p2.y);
 		painter.drawLine(p2.x, p2.y, p3.x, p3.y);
@@ -115,16 +121,16 @@ Canvas::Canvas(QWidget *parent) : QWidget(parent) {
 	points.push_back(boost::shared_ptr<Point>(new Point(glm::vec2(166, 474))));
 	points.push_back(boost::shared_ptr<Point>(new Point(glm::vec2(230, 571))));
 
-	MechanicalAssembly ass;
-	ass.gear1 = Gear(glm::vec2(points[0]->pos.x, points[0]->pos.y), 30);
-	ass.gear2 = Gear(glm::vec2(points[1]->pos.x, points[1]->pos.y), 40);
-	ass.link_length1 = 120;
-	ass.link_length2 = 180;
-	ass.link_length3 = 100;
-	ass.marker_point = points[2];
+	boost::shared_ptr<MechanicalAssembly> ass = boost::shared_ptr<MechanicalAssembly>(new MechanicalAssembly());
+	ass->gear1 = Gear(points[0]->pos, 30);
+	ass->gear2 = Gear(points[1]->pos, 40);
+	ass->link_length1 = 120;
+	ass->link_length2 = 180;
+	ass->link_length3 = 100;
+	ass->marker_point = points[2];
 	assemblies.push_back(ass);
 
-	ass.marker_point->pos = ass.getEndJointPosition();
+	ass->marker_point->pos = ass->getEndJointPosition();
 
 	length_p2_p4 = glm::length(points[4]->pos - points[2]->pos);
 	length_p3_p4 = glm::length(points[4]->pos - points[3]->pos);
@@ -136,9 +142,31 @@ Canvas::Canvas(QWidget *parent) : QWidget(parent) {
 	length_p6_p7 = glm::length(points[7]->pos - points[6]->pos);
 	length_p6_p8 = glm::length(points[8]->pos - points[6]->pos);
 	length_p7_p8 = glm::length(points[8]->pos - points[7]->pos);
+
+	//ass->forward(1.5);
+	try {
+		forwardKinematics();
+	}
+	catch (char* ex) {
+		std::cerr << "Initialization error:" << std::endl;
+		std::cerr << ex << std::endl;
+	}
 }
 
 Canvas::~Canvas() {
+}
+
+void Canvas::forwardKinematics() {
+	try {
+		points[4]->pos = circleCircleIntersection(points[3]->pos, length_p3_p4, points[2]->pos, length_p2_p4);
+		points[5]->pos = circleCircleIntersection(points[3]->pos, length_p3_p5, points[4]->pos, length_p4_p5);
+		points[7]->pos = circleCircleIntersection(points[4]->pos, length_p4_p7, points[2]->pos, length_p2_p7);
+		points[6]->pos = circleCircleIntersection(points[5]->pos, length_p5_p6, points[7]->pos, length_p6_p7);
+		points[8]->pos = circleCircleIntersection(points[7]->pos, length_p7_p8, points[6]->pos, length_p6_p8);
+	}
+	catch (char* ex) {
+		throw "forward kinematics error.";
+	}
 }
 
 void Canvas::run() {
@@ -155,15 +183,18 @@ void Canvas::stop() {
 
 void Canvas::animation_update() {
 	for (int i = 0; i < assemblies.size(); ++i) {
-		trace_marker_points.push_back(assemblies[i].getEndJointPosition());
-		assemblies[i].forward(0.03);
+		trace_marker_points.push_back(assemblies[i]->getEndJointPosition());
+		assemblies[i]->forward(0.03);
 	}
 
-	points[4]->pos = circleCircleIntersection(points[3]->pos, length_p3_p4, points[2]->pos, length_p2_p4);
-	points[5]->pos = circleCircleIntersection(points[3]->pos, length_p3_p5, points[4]->pos, length_p4_p5);
-	points[7]->pos = circleCircleIntersection(points[4]->pos, length_p4_p7, points[2]->pos, length_p2_p7);
-	points[6]->pos = circleCircleIntersection(points[5]->pos, length_p5_p6, points[7]->pos, length_p6_p7);
-	points[8]->pos = circleCircleIntersection(points[7]->pos, length_p7_p8, points[6]->pos, length_p6_p8);
+	try {
+		forwardKinematics();
+	}
+	catch (char* ex) {
+		stop();
+		std::cerr << "Animation is stopped by error:" << std::endl;
+		std::cerr << ex << std::endl;
+	}
 
 	update();
 }
@@ -181,7 +212,7 @@ void Canvas::paintEvent(QPaintEvent *e) {
 
 	// draw assembly
 	for (int i = 0; i < assemblies.size(); ++i) {
-		assemblies[i].draw(painter);
+		assemblies[i]->draw(painter);
 	}
 
 	// draw links

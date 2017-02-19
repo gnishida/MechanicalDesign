@@ -57,7 +57,7 @@ private:
 	bool shiftPressed;
 
 	std::vector<boost::shared_ptr<Point>> points;
-	std::vector<MechanicalAssembly> assemblies;
+	std::vector<boost::shared_ptr<MechanicalAssembly>> assemblies;
 	std::vector<glm::vec2> trace_marker_points;
 	QTimer* animation_timer;
 	float length_p2_p4;
@@ -80,6 +80,7 @@ public:
 	Canvas(QWidget *parent = NULL);
     ~Canvas();
 
+	void forwardKinematics();
 	void run();
 	void stop();
 
