@@ -224,6 +224,41 @@ namespace kinematics {
 	}
 
 	void Kinematics::draw(QPainter& painter) {
+		// draw thigh
+		painter.save();
+		painter.setPen(QPen(QColor(0, 0, 0), 3));
+		glm::vec2 dir1 = points[4]->pos - points[3]->pos;
+		glm::vec2 p1 = (points[3]->pos + points[4]->pos) * 0.5f;
+		float ang1 = atan2f(dir1.y, dir1.x) / M_PI * 180;
+		painter.translate(p1.x, p1.y);
+		painter.rotate(ang1);
+		painter.drawEllipse(QPointF(0, 0), glm::length(dir1) * 0.6, glm::length(dir1) * 0.2);
+		painter.restore();
+
+		// draw calf
+		painter.save();
+		painter.setPen(QPen(QColor(0, 0, 0), 3));
+		glm::vec2 dir2 = points[7]->pos - points[4]->pos;
+		glm::vec2 p2 = (points[4]->pos + points[7]->pos) * 0.5f;
+		float ang2 = atan2f(dir2.y, dir2.x) / M_PI * 180;
+		painter.translate(p2.x, p2.y);
+		painter.rotate(ang2);
+		painter.drawEllipse(QPointF(0, 0), glm::length(dir2) * 0.6, glm::length(dir2) * 0.2);
+		painter.restore();
+
+		// draw foot
+		painter.save();
+		painter.setPen(QPen(QColor(0, 0, 0), 3));
+		glm::vec2 dir3 = points[8]->pos - points[7]->pos;
+		glm::vec2 p3 = (points[7]->pos + points[8]->pos) * 0.5f;
+		float ang3 = atan2f(dir3.y, dir3.x) / M_PI * 180;
+		painter.translate(p3.x, p3.y);
+		painter.rotate(ang3);
+		painter.drawEllipse(QPointF(0, 0), glm::length(dir3) * 0.6, glm::length(dir3) * 0.2);
+		painter.restore();
+
+
+
 		// draw trace
 		painter.setPen(QPen(QColor(0, 0, 0), 1));
 		if (trace_marker_points.size() > 0) {
