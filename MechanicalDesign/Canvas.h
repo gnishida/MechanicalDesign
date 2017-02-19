@@ -9,12 +9,28 @@
 
 glm::vec2 circleCircleIntersection(const glm::vec2& center1, float radius1, const glm::vec2& center2, float radius2, bool debug = false);
 
+class Link;
+
 class Point {
 public:
+	int id;
 	glm::vec2 pos;
+	std::vector<boost::shared_ptr<Link>> out_links;
+	std::vector<boost::shared_ptr<Link>> in_links;
 
 public:
-	Point(const glm::vec2& pos) : pos(pos) {}
+	Point(int id, const glm::vec2& pos) : id(id), pos(pos) {}
+};
+
+class Link {
+public:
+	boost::shared_ptr<Point> start_point;
+	boost::shared_ptr<Point> end_point;
+	float length;
+
+public:
+	Link() {}
+	Link(boost::shared_ptr<Point> start_point, boost::shared_ptr<Point> end_point);
 };
 
 class Gear {
@@ -57,24 +73,10 @@ private:
 	bool shiftPressed;
 
 	std::vector<boost::shared_ptr<Point>> points;
+	std::vector<boost::shared_ptr<Link>> links;
 	std::vector<boost::shared_ptr<MechanicalAssembly>> assemblies;
 	std::vector<glm::vec2> trace_marker_points;
 	QTimer* animation_timer;
-	float length_p2_p4;
-	float length_p3_p4;
-	float length_p3_p5;
-	float length_p4_p5;
-	float length_p5_p6;
-	float length_p2_p7;
-	float length_p4_p7;
-	float length_p6_p7;
-	float length_p6_p8;
-	float length_p7_p8;
-	/*
-	std::vector<boost::shared_ptr<RigidObject>> selectedRigidObjects;
-	boost::shared_ptr<RigidObject> rigidObject;
-	std::vector<Joint> joints;
-	*/
 
 public:
 	Canvas(QWidget *parent = NULL);

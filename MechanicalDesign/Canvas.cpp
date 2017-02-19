@@ -24,11 +24,6 @@ glm::vec2 circleCircleIntersection(const glm::vec2& center1, float radius1, cons
 	if (d > radius1 + radius2) {
 		throw "No intersection";
 	}
-	/*
-	if (d > radius1 + radius2) {
-		return (center1 + center2) * 0.5f;
-	}
-	*/
 
 	float a = (radius1 * radius1 - radius2 * radius2 + d * d) / d / 2.0f;
 	float h = sqrtf(radius1 * radius1 - a * a);
@@ -37,6 +32,12 @@ glm::vec2 circleCircleIntersection(const glm::vec2& center1, float radius1, cons
 	perp /= glm::length(perp);
 
 	return center1 + dir * a / d + perp * h;
+}
+
+Link::Link(boost::shared_ptr<Point> start_point, boost::shared_ptr<Point> end_point) {
+	this->start_point = start_point;
+	this->end_point = end_point;
+	length = glm::length(end_point->pos - start_point->pos);
 }
 
 glm::vec2 Gear::getLinkEndPosition() {
@@ -111,16 +112,18 @@ Canvas::Canvas(QWidget *parent) : QWidget(parent) {
 	ctrlPressed = false;
 	shiftPressed = false;
 
-	points.push_back(boost::shared_ptr<Point>(new Point(glm::vec2(413, 280))));
-	points.push_back(boost::shared_ptr<Point>(new Point(glm::vec2(512, 298))));
-	points.push_back(boost::shared_ptr<Point>(new Point(glm::vec2(350, 477))));
-	points.push_back(boost::shared_ptr<Point>(new Point(glm::vec2(305, 242))));
-	points.push_back(boost::shared_ptr<Point>(new Point(glm::vec2(287, 453))));
-	points.push_back(boost::shared_ptr<Point>(new Point(glm::vec2(274, 409))));
-	points.push_back(boost::shared_ptr<Point>(new Point(glm::vec2(158, 439))));
-	points.push_back(boost::shared_ptr<Point>(new Point(glm::vec2(166, 474))));
-	points.push_back(boost::shared_ptr<Point>(new Point(glm::vec2(230, 571))));
+	// add points
+	points.push_back(boost::shared_ptr<Point>(new Point(0, glm::vec2(413, 280))));
+	points.push_back(boost::shared_ptr<Point>(new Point(1, glm::vec2(512, 298))));
+	points.push_back(boost::shared_ptr<Point>(new Point(2, glm::vec2(350, 477))));
+	points.push_back(boost::shared_ptr<Point>(new Point(3, glm::vec2(305, 242))));
+	points.push_back(boost::shared_ptr<Point>(new Point(4, glm::vec2(287, 453))));
+	points.push_back(boost::shared_ptr<Point>(new Point(5, glm::vec2(274, 409))));
+	points.push_back(boost::shared_ptr<Point>(new Point(6, glm::vec2(158, 439))));
+	points.push_back(boost::shared_ptr<Point>(new Point(7, glm::vec2(166, 474))));
+	points.push_back(boost::shared_ptr<Point>(new Point(8, glm::vec2(230, 571))));
 
+	// setup assembly
 	boost::shared_ptr<MechanicalAssembly> ass = boost::shared_ptr<MechanicalAssembly>(new MechanicalAssembly());
 	ass->gear1 = Gear(points[0]->pos, 30);
 	ass->gear2 = Gear(points[1]->pos, 40);
@@ -129,19 +132,53 @@ Canvas::Canvas(QWidget *parent) : QWidget(parent) {
 	ass->link_length3 = 100;
 	ass->marker_point = points[2];
 	assemblies.push_back(ass);
-
 	ass->marker_point->pos = ass->getEndJointPosition();
 
-	length_p2_p4 = glm::length(points[4]->pos - points[2]->pos);
-	length_p3_p4 = glm::length(points[4]->pos - points[3]->pos);
-	length_p3_p5 = glm::length(points[5]->pos - points[3]->pos);
-	length_p4_p5 = glm::length(points[5]->pos - points[4]->pos);
-	length_p5_p6 = glm::length(points[6]->pos - points[5]->pos);
-	length_p2_p7 = glm::length(points[7]->pos - points[2]->pos);
-	length_p4_p7 = glm::length(points[7]->pos - points[4]->pos);
-	length_p6_p7 = glm::length(points[7]->pos - points[6]->pos);
-	length_p6_p8 = glm::length(points[8]->pos - points[6]->pos);
-	length_p7_p8 = glm::length(points[8]->pos - points[7]->pos);
+	// add links
+	boost::shared_ptr<Link> link_2_4 = boost::shared_ptr<Link>(new Link(points[2], points[4]));
+	boost::shared_ptr<Link> link_3_4 = boost::shared_ptr<Link>(new Link(points[3], points[4]));
+	boost::shared_ptr<Link> link_3_5 = boost::shared_ptr<Link>(new Link(points[3], points[5]));
+	boost::shared_ptr<Link> link_4_5 = boost::shared_ptr<Link>(new Link(points[4], points[5]));
+	boost::shared_ptr<Link> link_5_6 = boost::shared_ptr<Link>(new Link(points[5], points[6]));
+	boost::shared_ptr<Link> link_2_7 = boost::shared_ptr<Link>(new Link(points[2], points[7]));
+	boost::shared_ptr<Link> link_4_7 = boost::shared_ptr<Link>(new Link(points[4], points[7]));
+	boost::shared_ptr<Link> link_6_8 = boost::shared_ptr<Link>(new Link(points[6], points[8]));
+	boost::shared_ptr<Link> link_7_6 = boost::shared_ptr<Link>(new Link(points[7], points[6]));
+	boost::shared_ptr<Link> link_7_8 = boost::shared_ptr<Link>(new Link(points[7], points[8]));
+	links.push_back(link_2_4);
+	links.push_back(link_3_4);
+	links.push_back(link_3_5);
+	links.push_back(link_4_5);
+	links.push_back(link_5_6);
+	links.push_back(link_2_7);
+	links.push_back(link_4_7);
+	links.push_back(link_6_8);
+	links.push_back(link_7_6);
+	links.push_back(link_7_8);
+
+	// set outgoing links to the points
+	points[2]->out_links.push_back(link_2_4);
+	points[2]->out_links.push_back(link_2_7);
+	points[3]->out_links.push_back(link_3_4);
+	points[3]->out_links.push_back(link_3_5);
+	points[4]->out_links.push_back(link_4_5);
+	points[4]->out_links.push_back(link_4_7);
+	points[5]->out_links.push_back(link_5_6);
+	points[6]->out_links.push_back(link_6_8);
+	points[7]->out_links.push_back(link_7_6);
+	points[7]->out_links.push_back(link_7_8);
+	
+	// set incoming links to the points
+	points[4]->in_links.push_back(link_3_4);
+	points[4]->in_links.push_back(link_2_4);
+	points[5]->in_links.push_back(link_3_5);
+	points[5]->in_links.push_back(link_4_5);
+	points[6]->in_links.push_back(link_5_6);
+	points[6]->in_links.push_back(link_7_6);
+	points[7]->in_links.push_back(link_4_7);
+	points[7]->in_links.push_back(link_2_7);
+	points[8]->in_links.push_back(link_7_8);
+	points[8]->in_links.push_back(link_6_8);
 
 	//ass->forward(1.5);
 	try {
@@ -158,11 +195,44 @@ Canvas::~Canvas() {
 
 void Canvas::forwardKinematics() {
 	try {
-		points[4]->pos = circleCircleIntersection(points[3]->pos, length_p3_p4, points[2]->pos, length_p2_p4);
-		points[5]->pos = circleCircleIntersection(points[3]->pos, length_p3_p5, points[4]->pos, length_p4_p5);
-		points[7]->pos = circleCircleIntersection(points[4]->pos, length_p4_p7, points[2]->pos, length_p2_p7);
-		points[6]->pos = circleCircleIntersection(points[5]->pos, length_p5_p6, points[7]->pos, length_p6_p7);
-		points[8]->pos = circleCircleIntersection(points[7]->pos, length_p7_p8, points[6]->pos, length_p6_p8);
+		std::list<boost::shared_ptr<Point>> queue;
+		for (int i = 0; i < points.size(); ++i) {
+			queue.push_back(points[i]);
+		}
+
+		std::map<int, bool> updated;
+		for (int i = 0; i < points.size(); ++i) {
+			updated[i] = false;
+		}
+
+		while (!queue.empty()) {
+			boost::shared_ptr<Point> point = queue.front();
+			queue.pop_front();
+
+			// if no parent points, set this point as updated.
+			if (point->in_links.size() == 0) {
+				updated[point->id] = true;
+				continue;
+			}
+
+			if (point->in_links.size() != 2) throw "forward kinematics error. Overconstrained.";
+
+			// if the parent points are not updated, postpoine updating this point
+			boost::shared_ptr<Link> l1 = point->in_links[0];
+			if (!updated[l1->start_point->id]) {
+				queue.push_back(point);
+				continue;
+			}
+			boost::shared_ptr<Link> l2 = point->in_links[1];
+			if (!updated[l2->start_point->id]) {
+				queue.push_back(point);
+				continue;
+			}
+
+			// update this point based on two adjacent points
+			point->pos = circleCircleIntersection(l1->start_point->pos, l1->length, l2->start_point->pos, l2->length);
+			updated[point->id] = true;
+		}
 	}
 	catch (char* ex) {
 		throw "forward kinematics error.";
@@ -217,15 +287,9 @@ void Canvas::paintEvent(QPaintEvent *e) {
 
 	// draw links
 	painter.setPen(QPen(QColor(0, 0, 0), 3));
-	painter.drawLine(points[3]->pos.x, points[3]->pos.y, points[4]->pos.x, points[4]->pos.y);
-	painter.drawLine(points[3]->pos.x, points[3]->pos.y, points[5]->pos.x, points[5]->pos.y);
-	painter.drawLine(points[4]->pos.x, points[4]->pos.y, points[5]->pos.x, points[5]->pos.y);
-	painter.drawLine(points[2]->pos.x, points[2]->pos.y, points[4]->pos.x, points[4]->pos.y);
-	painter.drawLine(points[2]->pos.x, points[2]->pos.y, points[7]->pos.x, points[7]->pos.y);
-	painter.drawLine(points[4]->pos.x, points[4]->pos.y, points[7]->pos.x, points[7]->pos.y);
-	painter.drawLine(points[6]->pos.x, points[6]->pos.y, points[7]->pos.x, points[7]->pos.y);
-	painter.drawLine(points[7]->pos.x, points[7]->pos.y, points[8]->pos.x, points[8]->pos.y);
-	painter.drawLine(points[6]->pos.x, points[6]->pos.y, points[8]->pos.x, points[8]->pos.y);
+	for (int i = 0; i < links.size(); ++i) {
+		painter.drawLine(links[i]->start_point->pos.x, links[i]->start_point->pos.y, links[i]->end_point->pos.x, links[i]->end_point->pos.y);
+	}
 }
 
 void Canvas::mousePressEvent(QMouseEvent* e) {
