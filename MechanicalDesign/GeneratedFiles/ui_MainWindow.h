@@ -102,7 +102,7 @@ public:
 
     void retranslateUi(QMainWindow *MainWindowClass)
     {
-        MainWindowClass->setWindowTitle(QApplication::translate("MainWindowClass", "MainWindow", 0));
+        MainWindowClass->setWindowTitle(QApplication::translate("MainWindowClass", "Mechanical Design", 0));
         actionExit->setText(QApplication::translate("MainWindowClass", "Exit", 0));
         actionRun->setText(QApplication::translate("MainWindowClass", "Run", 0));
         actionStop->setText(QApplication::translate("MainWindowClass", "Stop", 0));

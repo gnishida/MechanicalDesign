@@ -7,12 +7,12 @@ namespace kinematics {
 	glm::vec2 circleCircleIntersection(const glm::vec2& center1, float radius1, const glm::vec2& center2, float radius2) {
 		glm::vec2 dir = center2 - center1;
 		float d = glm::length(dir);
-		/*if (d > radius1 + radius2) {
-			throw "No intersection";
-		}*/
 		if (d > radius1 + radius2) {
-			return (center1 * radius2 + center2 + radius1) / (radius1 + radius2);
+			throw "No intersection";
 		}
+		/*if (d > radius1 + radius2) {
+			return (center1 * radius2 + center2 + radius1) / (radius1 + radius2);
+		}*/
 
 		float a = (radius1 * radius1 - radius2 * radius2 + d * d) / d / 2.0f;
 		float h = sqrtf(radius1 * radius1 - a * a);
@@ -98,6 +98,13 @@ namespace kinematics {
 		painter.setPen(QPen(QColor(0, 0, 255), 3));
 		painter.drawLine(p1.x, p1.y, endP.x, endP.y);
 		painter.drawLine(p2.x, p2.y, intP.x, intP.y);
+
+		// draw joints
+		painter.setPen(QPen(QColor(0, 0, 255), 3));
+		painter.drawEllipse(QPoint(p1.x, p1.y), 3, 3);
+		painter.drawEllipse(QPoint(p2.x, p2.y), 3, 3);
+		painter.drawEllipse(QPoint(intP.x, intP.y), 3, 3);
+		painter.drawEllipse(QPoint(endP.x, endP.y), 3, 3);
 	}
 
 	Kinematics::Kinematics() {
@@ -231,6 +238,15 @@ namespace kinematics {
 		forwardKinematics();
 	}
 
+	void Kinematics::stepBackward() {
+		for (int i = 0; i < assemblies.size(); ++i) {
+			trace_marker_points.push_back(assemblies[i]->getEndJointPosition());
+			assemblies[i]->forward(-0.03);
+		}
+
+		forwardKinematics();
+	}
+
 	void Kinematics::draw(QPainter& painter) {
 		if (show_bodies) {
 			// draw thigh
@@ -274,7 +290,7 @@ namespace kinematics {
 			// draw trace
 			painter.setPen(QPen(QColor(0, 0, 0), 1));
 			if (trace_marker_points.size() > 0) {
-				for (int i = 0; i < trace_marker_points.size() - 1; ++i) {
+				for (int i = std::max(0, (int)trace_marker_points.size() - 240); i < trace_marker_points.size() - 1; ++i) {
 					painter.drawLine(trace_marker_points[i].x, trace_marker_points[i].y, trace_marker_points[i + 1].x, trace_marker_points[i + 1].y);
 				}
 			}
@@ -290,6 +306,8 @@ namespace kinematics {
 			painter.setPen(QPen(QColor(0, 0, 0), 3));
 			for (int i = 0; i < links.size(); ++i) {
 				painter.drawLine(links[i]->start_point->pos.x, links[i]->start_point->pos.y, links[i]->end_point->pos.x, links[i]->end_point->pos.y);
+				painter.drawEllipse(QPoint(links[i]->start_point->pos.x, links[i]->start_point->pos.y), 3, 3);
+				painter.drawEllipse(QPoint(links[i]->end_point->pos.x, links[i]->end_point->pos.y), 3, 3);
 			}
 		}
 	}

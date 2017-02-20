@@ -17,6 +17,8 @@ private:
 
 	kinematics::Kinematics kinematics;
 	QTimer* animation_timer;
+	kinematics::Gear* selected_gear;
+	glm::vec2 prev_mouse_pt;
 
 public:
 	Canvas(QWidget *parent = NULL);

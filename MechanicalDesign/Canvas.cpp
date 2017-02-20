@@ -18,6 +18,7 @@ Canvas::Canvas(QWidget *parent) : QWidget(parent) {
 	shiftPressed = false;
 
 	animation_timer = NULL;
+	selected_gear = NULL;
 	
 	//ass->forward(1.5);
 	try {
@@ -68,6 +69,7 @@ void Canvas::animation_update() {
 		kinematics.stepForward();
 	}
 	catch (char* ex) {
+		//kinematics.stepBackward();
 		stop();
 		std::cerr << "Animation is stopped by error:" << std::endl;
 		std::cerr << ex << std::endl;
@@ -83,12 +85,37 @@ void Canvas::paintEvent(QPaintEvent *e) {
 }
 
 void Canvas::mousePressEvent(QMouseEvent* e) {
+	// hit test against gears
+	for (int i = 0; i < kinematics.assemblies.size(); ++i) {
+		float dist1 = glm::length(kinematics.assemblies[i]->gear1.center - glm::vec2(e->x(), e->y()));
+		if (dist1 <= kinematics.assemblies[i]->gear1.radius) {
+			// select this gear
+			selected_gear = &kinematics.assemblies[i]->gear1;
+			prev_mouse_pt = glm::vec2(e->x(), e->y());
+			break;
+		}
+
+		float dist2 = glm::length(kinematics.assemblies[i]->gear2.center - glm::vec2(e->x(), e->y()));
+		if (dist2 <= kinematics.assemblies[i]->gear2.radius) {
+			// select this gear
+			selected_gear = &kinematics.assemblies[i]->gear2;
+			prev_mouse_pt = glm::vec2(e->x(), e->y());
+			break;
+		}
+	}
 }
 
 void Canvas::mouseMoveEvent(QMouseEvent* e) {
+	if (selected_gear != NULL) {
+		// move this gear
+		selected_gear->center += glm::vec2(e->x(), e->y()) - prev_mouse_pt;
+		prev_mouse_pt = glm::vec2(e->x(), e->y());
+		update();
+	}
 }
 
 void Canvas::mouseReleaseEvent(QMouseEvent* e) {
+	selected_gear = NULL;
 }
 
 void Canvas::mouseDoubleClickEvent(QMouseEvent* e) {

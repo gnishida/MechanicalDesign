@@ -80,6 +80,7 @@ namespace kinematics {
 
 		void forwardKinematics();
 		void stepForward();
+		void stepBackward();
 		void draw(QPainter& painter);
 		void showAssemblies(bool flag);
 		void showLinks(bool flag);
