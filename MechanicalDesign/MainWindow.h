@@ -17,9 +17,12 @@ public:
 	MainWindow(QWidget *parent = 0);
 	~MainWindow();
 
+
 public slots:
 	void onRun();
 	void onStop();
+	void onShowAll();
+	void onShowChanged();
 };
 
 #endif // MAINWINDOW_H

@@ -16,6 +16,8 @@
 Canvas::Canvas(QWidget *parent) : QWidget(parent) {
 	ctrlPressed = false;
 	shiftPressed = false;
+
+	animation_timer = NULL;
 	
 	//ass->forward(1.5);
 	try {
@@ -31,15 +33,34 @@ Canvas::~Canvas() {
 }
 
 void Canvas::run() {
-	animation_timer = new QTimer(this);
-	connect(animation_timer, SIGNAL(timeout()), this, SLOT(animation_update()));
-	animation_timer->start(10);
+	if (animation_timer == NULL) {
+		animation_timer = new QTimer(this);
+		connect(animation_timer, SIGNAL(timeout()), this, SLOT(animation_update()));
+		animation_timer->start(10);
+	}
 }
 
 void Canvas::stop() {
-	animation_timer->stop();
-	delete animation_timer;
-	animation_timer = NULL;
+	if (animation_timer != NULL) {
+		animation_timer->stop();
+		delete animation_timer;
+		animation_timer = NULL;
+	}
+}
+
+void Canvas::showAssemblies(bool flag) {
+	kinematics.showAssemblies(flag);
+	update();
+}
+
+void Canvas::showLinks(bool flag) {
+	kinematics.showLinks(flag);
+	update();
+}
+
+void Canvas::showBodies(bool flag) {
+	kinematics.showBodies(flag);
+	update();
 }
 
 void Canvas::animation_update() {

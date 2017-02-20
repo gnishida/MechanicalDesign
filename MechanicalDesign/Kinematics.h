@@ -71,12 +71,19 @@ namespace kinematics {
 		std::vector<boost::shared_ptr<MechanicalAssembly>> assemblies;
 		std::vector<glm::vec2> trace_marker_points;
 
+		bool show_assemblies;
+		bool show_links;
+		bool show_bodies;
+
 	public:
 		Kinematics();
 
 		void forwardKinematics();
 		void stepForward();
 		void draw(QPainter& painter);
+		void showAssemblies(bool flag);
+		void showLinks(bool flag);
+		void showBodies(bool flag);
 	};
 
 }

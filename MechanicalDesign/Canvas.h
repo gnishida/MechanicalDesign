@@ -24,6 +24,9 @@ public:
 
 	void run();
 	void stop();
+	void showAssemblies(bool flag);
+	void showLinks(bool flag);
+	void showBodies(bool flag);
 
 public slots:
 	void animation_update();

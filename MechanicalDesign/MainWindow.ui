@@ -36,8 +36,19 @@
     <addaction name="actionRun"/>
     <addaction name="actionStop"/>
    </widget>
+   <widget class="QMenu" name="menuOptions">
+    <property name="title">
+     <string>Options</string>
+    </property>
+    <addaction name="actionShowAll"/>
+    <addaction name="separator"/>
+    <addaction name="actionShowAssemblies"/>
+    <addaction name="actionShowLinks"/>
+    <addaction name="actionShowBodies"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuTool"/>
+   <addaction name="menuOptions"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -61,6 +72,35 @@
   <action name="actionStop">
    <property name="text">
     <string>Stop</string>
+   </property>
+  </action>
+  <action name="actionShowAssemblies">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Assemblies</string>
+   </property>
+  </action>
+  <action name="actionShowAll">
+   <property name="text">
+    <string>Show All</string>
+   </property>
+  </action>
+  <action name="actionShowLinks">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Links</string>
+   </property>
+  </action>
+  <action name="actionShowBodies">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Bodies</string>
    </property>
   </action>
  </widget>

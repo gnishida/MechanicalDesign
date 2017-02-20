@@ -29,10 +29,15 @@ public:
     QAction *actionExit;
     QAction *actionRun;
     QAction *actionStop;
+    QAction *actionShowAssemblies;
+    QAction *actionShowAll;
+    QAction *actionShowLinks;
+    QAction *actionShowBodies;
     QWidget *centralWidget;
     QMenuBar *menuBar;
     QMenu *menuFile;
     QMenu *menuTool;
+    QMenu *menuOptions;
     QToolBar *mainToolBar;
     QStatusBar *statusBar;
 
@@ -47,6 +52,17 @@ public:
         actionRun->setObjectName(QStringLiteral("actionRun"));
         actionStop = new QAction(MainWindowClass);
         actionStop->setObjectName(QStringLiteral("actionStop"));
+        actionShowAssemblies = new QAction(MainWindowClass);
+        actionShowAssemblies->setObjectName(QStringLiteral("actionShowAssemblies"));
+        actionShowAssemblies->setCheckable(true);
+        actionShowAll = new QAction(MainWindowClass);
+        actionShowAll->setObjectName(QStringLiteral("actionShowAll"));
+        actionShowLinks = new QAction(MainWindowClass);
+        actionShowLinks->setObjectName(QStringLiteral("actionShowLinks"));
+        actionShowLinks->setCheckable(true);
+        actionShowBodies = new QAction(MainWindowClass);
+        actionShowBodies->setObjectName(QStringLiteral("actionShowBodies"));
+        actionShowBodies->setCheckable(true);
         centralWidget = new QWidget(MainWindowClass);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         MainWindowClass->setCentralWidget(centralWidget);
@@ -57,6 +73,8 @@ public:
         menuFile->setObjectName(QStringLiteral("menuFile"));
         menuTool = new QMenu(menuBar);
         menuTool->setObjectName(QStringLiteral("menuTool"));
+        menuOptions = new QMenu(menuBar);
+        menuOptions->setObjectName(QStringLiteral("menuOptions"));
         MainWindowClass->setMenuBar(menuBar);
         mainToolBar = new QToolBar(MainWindowClass);
         mainToolBar->setObjectName(QStringLiteral("mainToolBar"));
@@ -67,9 +85,15 @@ public:
 
         menuBar->addAction(menuFile->menuAction());
         menuBar->addAction(menuTool->menuAction());
+        menuBar->addAction(menuOptions->menuAction());
         menuFile->addAction(actionExit);
         menuTool->addAction(actionRun);
         menuTool->addAction(actionStop);
+        menuOptions->addAction(actionShowAll);
+        menuOptions->addSeparator();
+        menuOptions->addAction(actionShowAssemblies);
+        menuOptions->addAction(actionShowLinks);
+        menuOptions->addAction(actionShowBodies);
 
         retranslateUi(MainWindowClass);
 
@@ -82,8 +106,13 @@ public:
         actionExit->setText(QApplication::translate("MainWindowClass", "Exit", 0));
         actionRun->setText(QApplication::translate("MainWindowClass", "Run", 0));
         actionStop->setText(QApplication::translate("MainWindowClass", "Stop", 0));
+        actionShowAssemblies->setText(QApplication::translate("MainWindowClass", "Show Assemblies", 0));
+        actionShowAll->setText(QApplication::translate("MainWindowClass", "Show All", 0));
+        actionShowLinks->setText(QApplication::translate("MainWindowClass", "Show Links", 0));
+        actionShowBodies->setText(QApplication::translate("MainWindowClass", "Show Bodies", 0));
         menuFile->setTitle(QApplication::translate("MainWindowClass", "File", 0));
         menuTool->setTitle(QApplication::translate("MainWindowClass", "Tool", 0));
+        menuOptions->setTitle(QApplication::translate("MainWindowClass", "Options", 0));
     } // retranslateUi
 
 };
