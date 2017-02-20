@@ -7,8 +7,11 @@ namespace kinematics {
 	glm::vec2 circleCircleIntersection(const glm::vec2& center1, float radius1, const glm::vec2& center2, float radius2) {
 		glm::vec2 dir = center2 - center1;
 		float d = glm::length(dir);
-		if (d > radius1 + radius2) {
+		/*if (d > radius1 + radius2) {
 			throw "No intersection";
+		}*/
+		if (d > radius1 + radius2) {
+			return (center1 * radius2 + center2 + radius1) / (radius1 + radius2);
 		}
 
 		float a = (radius1 * radius1 - radius2 * radius2 + d * d) / d / 2.0f;
@@ -75,7 +78,7 @@ namespace kinematics {
 	}
 
 	void MechanicalAssembly::forward(float step) {
-		gear1.phase -= step;
+		gear1.phase += step;
 		gear2.phase -= step;
 
 		marker_point->pos = getEndJointPosition();
@@ -99,23 +102,25 @@ namespace kinematics {
 
 	Kinematics::Kinematics() {
 		// add points
-		points.push_back(boost::shared_ptr<Point>(new Point(0, glm::vec2(413, 280))));
-		points.push_back(boost::shared_ptr<Point>(new Point(1, glm::vec2(512, 298))));
-		points.push_back(boost::shared_ptr<Point>(new Point(2, glm::vec2(350, 477))));
-		points.push_back(boost::shared_ptr<Point>(new Point(3, glm::vec2(305, 242))));
-		points.push_back(boost::shared_ptr<Point>(new Point(4, glm::vec2(287, 453))));
-		points.push_back(boost::shared_ptr<Point>(new Point(5, glm::vec2(274, 409))));
-		points.push_back(boost::shared_ptr<Point>(new Point(6, glm::vec2(158, 439))));
-		points.push_back(boost::shared_ptr<Point>(new Point(7, glm::vec2(166, 474))));
-		points.push_back(boost::shared_ptr<Point>(new Point(8, glm::vec2(230, 571))));
+		points.push_back(boost::shared_ptr<Point>(new Point(0, glm::vec2(431, 282))));
+		points.push_back(boost::shared_ptr<Point>(new Point(1, glm::vec2(565, 298))));
+		points.push_back(boost::shared_ptr<Point>(new Point(2, glm::vec2(301, 444))));
+		points.push_back(boost::shared_ptr<Point>(new Point(3, glm::vec2(335, 272))));
+		points.push_back(boost::shared_ptr<Point>(new Point(4, glm::vec2(205, 418))));
+		points.push_back(boost::shared_ptr<Point>(new Point(5, glm::vec2(223, 344))));
+		points.push_back(boost::shared_ptr<Point>(new Point(6, glm::vec2(55, 376))));
+		points.push_back(boost::shared_ptr<Point>(new Point(7, glm::vec2(47, 432))));
+		points.push_back(boost::shared_ptr<Point>(new Point(8, glm::vec2(5, 604))));
 
 		// setup assembly
 		boost::shared_ptr<MechanicalAssembly> ass = boost::shared_ptr<MechanicalAssembly>(new MechanicalAssembly());
-		ass->gear1 = Gear(points[0]->pos, 30);
-		ass->gear2 = Gear(points[1]->pos, 40);
-		ass->link_length1 = 120;
-		ass->link_length2 = 180;
-		ass->link_length3 = 100;
+		ass->gear1 = Gear(points[0]->pos, 29.45);
+		ass->gear1.phase = 0.4;
+		ass->gear2 = Gear(points[1]->pos, 39.68);
+		ass->gear2.phase = M_PI + 0.2;
+		ass->link_length1 = 131.5;
+		ass->link_length2 = 187.8;
+		ass->link_length3 = 90.6;
 		ass->marker_point = points[2];
 		assemblies.push_back(ass);
 		ass->marker_point->pos = ass->getEndJointPosition();
@@ -163,8 +168,8 @@ namespace kinematics {
 		points[6]->in_links.push_back(link_7_6);
 		points[7]->in_links.push_back(link_4_7);
 		points[7]->in_links.push_back(link_2_7);
-		points[8]->in_links.push_back(link_7_8);
 		points[8]->in_links.push_back(link_6_8);
+		points[8]->in_links.push_back(link_7_8);
 
 	}
 
@@ -226,7 +231,8 @@ namespace kinematics {
 	void Kinematics::draw(QPainter& painter) {
 		// draw thigh
 		painter.save();
-		painter.setPen(QPen(QColor(0, 0, 0), 3));
+		painter.setPen(QPen(QColor(0, 0, 0), 1));
+		painter.setBrush(QBrush(QColor(0, 255, 0, 60)));
 		glm::vec2 dir1 = points[4]->pos - points[3]->pos;
 		glm::vec2 p1 = (points[3]->pos + points[4]->pos) * 0.5f;
 		float ang1 = atan2f(dir1.y, dir1.x) / M_PI * 180;
@@ -237,7 +243,8 @@ namespace kinematics {
 
 		// draw calf
 		painter.save();
-		painter.setPen(QPen(QColor(0, 0, 0), 3));
+		painter.setPen(QPen(QColor(0, 0, 0), 1));
+		painter.setBrush(QBrush(QColor(0, 255, 0, 60)));
 		glm::vec2 dir2 = points[7]->pos - points[4]->pos;
 		glm::vec2 p2 = (points[4]->pos + points[7]->pos) * 0.5f;
 		float ang2 = atan2f(dir2.y, dir2.x) / M_PI * 180;
@@ -248,7 +255,8 @@ namespace kinematics {
 
 		// draw foot
 		painter.save();
-		painter.setPen(QPen(QColor(0, 0, 0), 3));
+		painter.setPen(QPen(QColor(0, 0, 0), 1));
+		painter.setBrush(QBrush(QColor(0, 255, 0, 60)));
 		glm::vec2 dir3 = points[8]->pos - points[7]->pos;
 		glm::vec2 p3 = (points[7]->pos + points[8]->pos) * 0.5f;
 		float ang3 = atan2f(dir3.y, dir3.x) / M_PI * 180;
@@ -256,7 +264,6 @@ namespace kinematics {
 		painter.rotate(ang3);
 		painter.drawEllipse(QPointF(0, 0), glm::length(dir3) * 0.6, glm::length(dir3) * 0.2);
 		painter.restore();
-
 
 
 		// draw trace
