@@ -19,6 +19,7 @@ public:
 
 
 public slots:
+	void onOpen();
 	void onRun();
 	void onStop();
 	void onShowAll();

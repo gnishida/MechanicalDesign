@@ -33,6 +33,7 @@ public:
     QAction *actionShowAll;
     QAction *actionShowLinks;
     QAction *actionShowBodies;
+    QAction *actionOpen;
     QWidget *centralWidget;
     QMenuBar *menuBar;
     QMenu *menuFile;
@@ -63,6 +64,8 @@ public:
         actionShowBodies = new QAction(MainWindowClass);
         actionShowBodies->setObjectName(QStringLiteral("actionShowBodies"));
         actionShowBodies->setCheckable(true);
+        actionOpen = new QAction(MainWindowClass);
+        actionOpen->setObjectName(QStringLiteral("actionOpen"));
         centralWidget = new QWidget(MainWindowClass);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         MainWindowClass->setCentralWidget(centralWidget);
@@ -86,6 +89,8 @@ public:
         menuBar->addAction(menuFile->menuAction());
         menuBar->addAction(menuTool->menuAction());
         menuBar->addAction(menuOptions->menuAction());
+        menuFile->addAction(actionOpen);
+        menuFile->addSeparator();
         menuFile->addAction(actionExit);
         menuTool->addAction(actionRun);
         menuTool->addAction(actionStop);
@@ -110,6 +115,8 @@ public:
         actionShowAll->setText(QApplication::translate("MainWindowClass", "Show All", 0));
         actionShowLinks->setText(QApplication::translate("MainWindowClass", "Show Links", 0));
         actionShowBodies->setText(QApplication::translate("MainWindowClass", "Show Bodies", 0));
+        actionOpen->setText(QApplication::translate("MainWindowClass", "Open", 0));
+        actionOpen->setShortcut(QApplication::translate("MainWindowClass", "Ctrl+O", 0));
         menuFile->setTitle(QApplication::translate("MainWindowClass", "File", 0));
         menuTool->setTitle(QApplication::translate("MainWindowClass", "Tool", 0));
         menuOptions->setTitle(QApplication::translate("MainWindowClass", "Options", 0));

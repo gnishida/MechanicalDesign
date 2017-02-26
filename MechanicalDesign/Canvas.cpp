@@ -33,6 +33,11 @@ Canvas::Canvas(QWidget *parent) : QWidget(parent) {
 Canvas::~Canvas() {
 }
 
+void Canvas::open(const QString& filename) {
+	kinematics.load(filename);
+	update();
+}
+
 void Canvas::run() {
 	if (animation_timer == NULL) {
 		animation_timer = new QTimer(this);

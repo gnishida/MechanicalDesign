@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<design author="Gen Nishida" version="1.0" date="2/26/2017">
+	<points>
+		<point id="0" x="431" y="282"/>
+		<point id="1" x="565" y="298"/>
+		<point id="2" x="301" y="444"/>
+		<point id="3" x="335" y="272"/>
+		<point id="4" x="205" y="418"/>
+		<point id="5" x="223" y="344"/>
+		<point id="6" x="55" y="376"/>
+		<point id="7" x="47" y="432"/>
+		<point id="8" x="5" y="604"/>
+	</points>
+	<assemblies>
+		<assembly end_effector="2">
+			<gear1 center="0" radius="29.45" phase="0.4"/>
+			<gear2 center="1" radius="39.68" phase="3.34159"/>
+			<link1 length="131.5"/>
+			<link2 length="187.8"/>
+			<link3 length="90.6"/>
+		</assembly>
+	</assemblies>
+	<links>
+		<link order="1" start="2" end="4"/>
+		<link order="0" start="3" end="4"/>
+		<link order="0" start="3" end="5"/>
+		<link order="1" start="4" end="5"/>
+		<link order="0" start="5" end="6"/>
+		<link order="1" start="2" end="7"/>
+		<link order="0" start="4" end="7"/>
+		<link order="0" start="6" end="8"/>
+		<link order="1" start="7" end="6"/>
+		<link order="1" start="7" end="8"/>
+	</links>
+	<bodies>
+		<body id1="3" id2="4"/>
+		<body id1="4" id2="7"/>
+		<body id1="7" id2="8"/>
+	</bodies>
+</design>

@@ -4,6 +4,7 @@
 #include <vector>
 #include <glm/glm.hpp>
 #include <boost/shared_ptr.hpp>
+#include <QMap>
 
 namespace kinematics {
 	glm::vec2 circleCircleIntersection(const glm::vec2& center1, float radius1, const glm::vec2& center2, float radius);
@@ -66,10 +67,11 @@ namespace kinematics {
 
 	class Kinematics {
 	public:
-		std::vector<boost::shared_ptr<Point>> points;
+		QMap<int, boost::shared_ptr<Point>> points;
 		std::vector<boost::shared_ptr<Link>> links;
 		std::vector<boost::shared_ptr<MechanicalAssembly>> assemblies;
 		std::vector<glm::vec2> trace_marker_points;
+		std::vector<std::pair<int, int>> bodies;
 
 		bool show_assemblies;
 		bool show_links;
@@ -78,6 +80,7 @@ namespace kinematics {
 	public:
 		Kinematics();
 
+		bool load(const QString& filename);
 		void forwardKinematics();
 		void stepForward();
 		void stepBackward();

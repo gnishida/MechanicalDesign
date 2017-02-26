@@ -24,6 +24,7 @@ public:
 	Canvas(QWidget *parent = NULL);
     ~Canvas();
 
+	void open(const QString& filename);
 	void run();
 	void stop();
 	void showAssemblies(bool flag);

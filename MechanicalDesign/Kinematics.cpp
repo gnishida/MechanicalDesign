@@ -1,5 +1,7 @@
 #include "Kinematics.h"
 #include <iostream>
+#include <QFile>
+#include <QDomDocument>
 
 namespace kinematics {
 	float M_PI = 3.141592653;
@@ -108,91 +110,144 @@ namespace kinematics {
 	}
 
 	Kinematics::Kinematics() {
-		// add points
-		points.push_back(boost::shared_ptr<Point>(new Point(0, glm::vec2(431, 282))));
-		points.push_back(boost::shared_ptr<Point>(new Point(1, glm::vec2(565, 298))));
-		points.push_back(boost::shared_ptr<Point>(new Point(2, glm::vec2(301, 444))));
-		points.push_back(boost::shared_ptr<Point>(new Point(3, glm::vec2(335, 272))));
-		points.push_back(boost::shared_ptr<Point>(new Point(4, glm::vec2(205, 418))));
-		points.push_back(boost::shared_ptr<Point>(new Point(5, glm::vec2(223, 344))));
-		points.push_back(boost::shared_ptr<Point>(new Point(6, glm::vec2(55, 376))));
-		points.push_back(boost::shared_ptr<Point>(new Point(7, glm::vec2(47, 432))));
-		points.push_back(boost::shared_ptr<Point>(new Point(8, glm::vec2(5, 604))));
-
-		// setup assembly
-		boost::shared_ptr<MechanicalAssembly> ass = boost::shared_ptr<MechanicalAssembly>(new MechanicalAssembly());
-		ass->gear1 = Gear(points[0]->pos, 29.45);
-		ass->gear1.phase = 0.4;
-		ass->gear2 = Gear(points[1]->pos, 39.68);
-		ass->gear2.phase = M_PI + 0.2;
-		ass->link_length1 = 131.5;
-		ass->link_length2 = 187.8;
-		ass->link_length3 = 90.6;
-		ass->marker_point = points[2];
-		assemblies.push_back(ass);
-		ass->marker_point->pos = ass->getEndJointPosition();
-
-		// add links
-		boost::shared_ptr<Link> link_2_4 = boost::shared_ptr<Link>(new Link(points[2], points[4]));
-		boost::shared_ptr<Link> link_3_4 = boost::shared_ptr<Link>(new Link(points[3], points[4]));
-		boost::shared_ptr<Link> link_3_5 = boost::shared_ptr<Link>(new Link(points[3], points[5]));
-		boost::shared_ptr<Link> link_4_5 = boost::shared_ptr<Link>(new Link(points[4], points[5]));
-		boost::shared_ptr<Link> link_5_6 = boost::shared_ptr<Link>(new Link(points[5], points[6]));
-		boost::shared_ptr<Link> link_2_7 = boost::shared_ptr<Link>(new Link(points[2], points[7]));
-		boost::shared_ptr<Link> link_4_7 = boost::shared_ptr<Link>(new Link(points[4], points[7]));
-		boost::shared_ptr<Link> link_6_8 = boost::shared_ptr<Link>(new Link(points[6], points[8]));
-		boost::shared_ptr<Link> link_7_6 = boost::shared_ptr<Link>(new Link(points[7], points[6]));
-		boost::shared_ptr<Link> link_7_8 = boost::shared_ptr<Link>(new Link(points[7], points[8]));
-		links.push_back(link_2_4);
-		links.push_back(link_3_4);
-		links.push_back(link_3_5);
-		links.push_back(link_4_5);
-		links.push_back(link_5_6);
-		links.push_back(link_2_7);
-		links.push_back(link_4_7);
-		links.push_back(link_6_8);
-		links.push_back(link_7_6);
-		links.push_back(link_7_8);
-
-		// set outgoing links to the points
-		points[2]->out_links.push_back(link_2_4);
-		points[2]->out_links.push_back(link_2_7);
-		points[3]->out_links.push_back(link_3_4);
-		points[3]->out_links.push_back(link_3_5);
-		points[4]->out_links.push_back(link_4_5);
-		points[4]->out_links.push_back(link_4_7);
-		points[5]->out_links.push_back(link_5_6);
-		points[6]->out_links.push_back(link_6_8);
-		points[7]->out_links.push_back(link_7_6);
-		points[7]->out_links.push_back(link_7_8);
-
-		// set incoming links to the points
-		points[4]->in_links.push_back(link_3_4);
-		points[4]->in_links.push_back(link_2_4);
-		points[5]->in_links.push_back(link_3_5);
-		points[5]->in_links.push_back(link_4_5);
-		points[6]->in_links.push_back(link_5_6);
-		points[6]->in_links.push_back(link_7_6);
-		points[7]->in_links.push_back(link_4_7);
-		points[7]->in_links.push_back(link_2_7);
-		points[8]->in_links.push_back(link_6_8);
-		points[8]->in_links.push_back(link_7_8);
-
 		show_assemblies = true;
 		show_links = true;
 		show_bodies = true;
 	}
 
+	bool Kinematics::load(const QString& filename) {
+		QFile file(filename);
+		file.open(QFile::ReadOnly | QFile::Text);
+
+		QDomDocument doc;
+		doc.setContent(&file);
+
+		QDomElement root = doc.documentElement();
+		if (root.tagName() != "design")	return false;
+
+		// clear the data
+		points.clear();
+		assemblies.clear();
+		links.clear();
+		bodies.clear();
+
+		QDomNode node = root.firstChild();
+		while (!node.isNull()) {
+			if (node.toElement().tagName() == "points") {
+				QDomNode point_node = node.firstChild();
+				while (!point_node.isNull()) {
+					if (point_node.toElement().tagName() == "point") {
+						// add a point
+						int id = point_node.toElement().attribute("id").toInt();
+						float x = point_node.toElement().attribute("x").toFloat();
+						float y = point_node.toElement().attribute("y").toFloat();
+						points[id] = boost::shared_ptr<Point>(new Point(id, glm::vec2(x, y)));
+					}
+
+					point_node = point_node.nextSibling();
+				}
+			}
+			else if (node.toElement().tagName() == "assemblies") {
+				QDomNode assembly_node = node.firstChild();
+				while (!assembly_node.isNull()) {
+					if (assembly_node.toElement().tagName() == "assembly") {
+						// add an assembly
+						boost::shared_ptr<MechanicalAssembly> ass = boost::shared_ptr<MechanicalAssembly>(new MechanicalAssembly());
+
+						int end_effector_id = assembly_node.toElement().attribute("end_effector").toInt();
+						ass->marker_point = points[end_effector_id];
+
+						QDomNode assembly_part_node = assembly_node.firstChild();
+						while (!assembly_part_node.isNull()) {
+							if (assembly_part_node.toElement().tagName() == "gear1") {
+								int center_id = assembly_part_node.toElement().attribute("center").toInt();
+								float radius = assembly_part_node.toElement().attribute("radius").toFloat();
+								float phase = assembly_part_node.toElement().attribute("phase").toFloat();
+
+								ass->gear1 = Gear(points[center_id]->pos, radius);
+								ass->gear1.phase = phase;
+							}
+							else if (assembly_part_node.toElement().tagName() == "gear2") {
+								int center_id = assembly_part_node.toElement().attribute("center").toInt();
+								float radius = assembly_part_node.toElement().attribute("radius").toFloat();
+								float phase = assembly_part_node.toElement().attribute("phase").toFloat();
+
+								ass->gear2 = Gear(points[center_id]->pos, radius);
+								ass->gear2.phase = phase;
+							}
+							else if (assembly_part_node.toElement().tagName() == "link1") {
+								float length = assembly_part_node.toElement().attribute("length").toFloat();
+								ass->link_length1 = length;
+							}
+							else if (assembly_part_node.toElement().tagName() == "link2") {
+								float length = assembly_part_node.toElement().attribute("length").toFloat();
+								ass->link_length2 = length;
+							}
+							else if (assembly_part_node.toElement().tagName() == "link3") {
+								float length = assembly_part_node.toElement().attribute("length").toFloat();
+								ass->link_length3 = length;
+							}
+
+							assembly_part_node = assembly_part_node.nextSibling();
+						}
+
+						ass->marker_point->pos = ass->getEndJointPosition();
+						assemblies.push_back(ass);
+					}
+
+					assembly_node = assembly_node.nextSibling();
+				}
+			}
+			else if (node.toElement().tagName() == "links") {
+				QDomNode link_node = node.firstChild();
+				while (!link_node.isNull()) {
+					if (link_node.toElement().tagName() == "link") {
+						// add a link
+						int order = link_node.toElement().attribute("order").toInt();
+						int start = link_node.toElement().attribute("start").toInt();
+						int end = link_node.toElement().attribute("end").toInt();
+						boost::shared_ptr<Link> link = boost::shared_ptr<Link>(new Link(points[start], points[end]));
+						links.push_back(link);
+
+						// set outgoing link to the point
+						points[start]->out_links.push_back(link);
+
+						// set incoming link to the point
+						if (points[end]->in_links.size() == 0) points[end]->in_links.resize(2);
+						points[end]->in_links[order] = link;
+					}
+
+					link_node = link_node.nextSibling();
+				}
+			}
+			else if (node.toElement().tagName() == "bodies") {
+				QDomNode body_node = node.firstChild();
+				while (!body_node.isNull()) {
+					if (body_node.toElement().tagName() == "body") {
+						// add a body
+						int id1 = body_node.toElement().attribute("id1").toInt();
+						int id2 = body_node.toElement().attribute("id2").toInt();
+						bodies.push_back(std::make_pair(id1, id2));
+					}
+
+					body_node = body_node.nextSibling();
+				}
+			}
+
+			node = node.nextSibling();
+		}
+	}
+
 	void Kinematics::forwardKinematics() {
 		try {
 			std::list<boost::shared_ptr<Point>> queue;
-			for (int i = 0; i < points.size(); ++i) {
-				queue.push_back(points[i]);
+			for (auto it = points.begin(); it != points.end(); ++it) {
+				queue.push_back(*it);
 			}
 
 			std::map<int, bool> updated;
-			for (int i = 0; i < points.size(); ++i) {
-				updated[i] = false;
+			for (auto it = points.begin(); it != points.end(); ++it) {
+				updated[it.key()];
 			}
 
 			while (!queue.empty()) {
@@ -249,41 +304,19 @@ namespace kinematics {
 
 	void Kinematics::draw(QPainter& painter) {
 		if (show_bodies) {
-			// draw thigh
-			painter.save();
-			painter.setPen(QPen(QColor(0, 0, 0), 1));
-			painter.setBrush(QBrush(QColor(0, 255, 0, 60)));
-			glm::vec2 dir1 = points[4]->pos - points[3]->pos;
-			glm::vec2 p1 = (points[3]->pos + points[4]->pos) * 0.5f;
-			float ang1 = atan2f(dir1.y, dir1.x) / M_PI * 180;
-			painter.translate(p1.x, p1.y);
-			painter.rotate(ang1);
-			painter.drawEllipse(QPointF(0, 0), glm::length(dir1) * 0.6, glm::length(dir1) * 0.2);
-			painter.restore();
+			for (int i = 0; i < bodies.size(); ++i) {
+				painter.save();
+				painter.setPen(QPen(QColor(0, 0, 0), 1));
+				painter.setBrush(QBrush(QColor(0, 255, 0, 60)));
+				glm::vec2 dir1 = points[bodies[i].second]->pos - points[bodies[i].first]->pos;
+				glm::vec2 p1 = (points[bodies[i].first]->pos + points[bodies[i].second]->pos) * 0.5f;
+				float ang1 = atan2f(dir1.y, dir1.x) / M_PI * 180;
+				painter.translate(p1.x, p1.y);
+				painter.rotate(ang1);
+				painter.drawEllipse(QPointF(0, 0), glm::length(dir1) * 0.6, glm::length(dir1) * 0.2);
+				painter.restore();
 
-			// draw calf
-			painter.save();
-			painter.setPen(QPen(QColor(0, 0, 0), 1));
-			painter.setBrush(QBrush(QColor(0, 255, 0, 60)));
-			glm::vec2 dir2 = points[7]->pos - points[4]->pos;
-			glm::vec2 p2 = (points[4]->pos + points[7]->pos) * 0.5f;
-			float ang2 = atan2f(dir2.y, dir2.x) / M_PI * 180;
-			painter.translate(p2.x, p2.y);
-			painter.rotate(ang2);
-			painter.drawEllipse(QPointF(0, 0), glm::length(dir2) * 0.6, glm::length(dir2) * 0.2);
-			painter.restore();
-
-			// draw foot
-			painter.save();
-			painter.setPen(QPen(QColor(0, 0, 0), 1));
-			painter.setBrush(QBrush(QColor(0, 255, 0, 60)));
-			glm::vec2 dir3 = points[8]->pos - points[7]->pos;
-			glm::vec2 p3 = (points[7]->pos + points[8]->pos) * 0.5f;
-			float ang3 = atan2f(dir3.y, dir3.x) / M_PI * 180;
-			painter.translate(p3.x, p3.y);
-			painter.rotate(ang3);
-			painter.drawEllipse(QPointF(0, 0), glm::length(dir3) * 0.6, glm::length(dir3) * 0.2);
-			painter.restore();
+			}
 		}
 
 		if (show_assemblies) {
