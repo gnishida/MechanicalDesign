@@ -1,0 +1,57 @@
+<design author="Gen Nishida" version="1.0" date="02/26/2017">
+    <points>
+        <point y="212.217" x="345.657" id="0"/>
+        <point y="144" x="451" id="1"/>
+        <point y="238.003" x="376.297" id="2"/>
+        <point y="386.131" x="345.784" id="3"/>
+        <point y="269.442" x="263.297" id="4"/>
+        <point y="166" x="197.5" id="5"/>
+        <point y="262.39" x="213.717" id="6"/>
+        <point y="232.205" x="190.504" id="7"/>
+        <point y="268.548" x="113.101" id="8"/>
+        <point y="283.322" x="137.22" id="9"/>
+        <point y="336.702" x="207.843" id="10"/>
+    </points>
+    <assemblies>
+        <assembly end_effector="0">
+            <gear y="162" phase="6.36002" x="426" speed="1" radius="13.15"/>
+            <gear y="167" phase="4.16" x="363" speed="1" radius="12.04"/>
+            <order id1="1" id2="0"/>
+            <link1 length="49.03"/>
+            <link2 length="48.27"/>
+            <link3 length="58.25"/>
+        </assembly>
+        <assembly end_effector="4">
+            <gear y="171" phase="3.76" x="245.5" speed="1" radius="14.725"/>
+            <gear y="179" phase="-0.0184074" x="312.5" speed="-1" radius="19.84"/>
+            <order id1="0" id2="1"/>
+            <link1 length="65.75"/>
+            <link2 length="93.9"/>
+            <link3 length="45.3"/>
+        </assembly>
+    </assemblies>
+    <links>
+        <link start="0" order="0" end="2"/>
+        <link start="1" order="1" end="2"/>
+        <link start="0" order="0" end="3"/>
+        <link start="2" order="1" end="3"/>
+        <link start="5" order="0" end="6"/>
+        <link start="4" order="1" end="6"/>
+        <link start="5" order="0" end="7"/>
+        <link start="6" order="1" end="7"/>
+        <link start="7" order="0" end="8"/>
+        <link start="9" order="1" end="8"/>
+        <link start="6" order="0" end="9"/>
+        <link start="4" order="1" end="9"/>
+        <link start="8" order="0" end="10"/>
+        <link start="9" order="1" end="10"/>
+    </links>
+    <bodies>
+        <body id1="1" id2="5"/>
+        <body id1="1" id2="2"/>
+        <body id1="2" id2="3"/>
+        <body id1="5" id2="6"/>
+        <body id1="6" id2="9"/>
+        <body id1="9" id2="10"/>
+    </bodies>
+</design>

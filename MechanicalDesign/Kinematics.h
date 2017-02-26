@@ -24,13 +24,13 @@ namespace kinematics {
 
 	class Link {
 	public:
-		boost::shared_ptr<Point> start_point;
-		boost::shared_ptr<Point> end_point;
+		int start;
+		int end;
 		float length;
 
 	public:
 		Link() {}
-		Link(boost::shared_ptr<Point> start_point, boost::shared_ptr<Point> end_point);
+		Link(int start_point, int end_point, float length);
 	};
 
 	class Gear {
@@ -55,13 +55,13 @@ namespace kinematics {
 		float link_length1;
 		float link_length2;
 		float link_length3;
-		boost::shared_ptr<Point> marker_point;
+		boost::shared_ptr<Point> end_effector;
 
 	public:
 		MechanicalAssembly() {}
 
 		glm::vec2 getIntermediateJointPosition();
-		glm::vec2 getEndJointPosition();
+		glm::vec2 getEndEffectorPosition();
 		void forward(float step);
 		void draw(QPainter& painter);
 	};
@@ -72,7 +72,7 @@ namespace kinematics {
 		std::vector<boost::shared_ptr<Link>> links;
 		std::vector<boost::shared_ptr<MechanicalAssembly>> assemblies;
 		std::vector<std::pair<int, int>> bodies;
-		std::vector<std::vector<glm::vec2>> trace_marker_points;
+		std::vector<std::vector<glm::vec2>> trace_end_effector;
 
 		bool show_assemblies;
 		bool show_links;

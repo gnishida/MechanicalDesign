@@ -27,10 +27,10 @@ namespace kinematics {
 		return center1 + dir * a / d + perp * h;
 	}
 
-	Link::Link(boost::shared_ptr<Point> start_point, boost::shared_ptr<Point> end_point) {
-		this->start_point = start_point;
-		this->end_point = end_point;
-		length = glm::length(end_point->pos - start_point->pos);
+	Link::Link(int start, int end, float length) {
+		this->start = start;
+		this->end = end;
+		this->length = length;
 	}
 
 	glm::vec2 Gear::getLinkEndPosition() {
@@ -71,7 +71,7 @@ namespace kinematics {
 		return circleCircleIntersection(p1, link_length1, p2, link_length2);
 	}
 
-	glm::vec2 MechanicalAssembly::getEndJointPosition() {
+	glm::vec2 MechanicalAssembly::getEndEffectorPosition() {
 		glm::vec2 p1 = gears[order.first].getLinkEndPosition();
 		glm::vec2 p2 = gears[order.second].getLinkEndPosition();
 
@@ -85,15 +85,15 @@ namespace kinematics {
 		for (int i = 0; i < gears.size(); ++i) {
 			gears[i].phase += step * gears[i].speed;
 		}
-
-		marker_point->pos = getEndJointPosition();
+				
+		end_effector->pos = getEndEffectorPosition();
 	}
 
 	void MechanicalAssembly::draw(QPainter& painter) {
 		glm::vec2 p1 = gears[0].getLinkEndPosition();
 		glm::vec2 p2 = gears[1].getLinkEndPosition();
 		glm::vec2 intP = getIntermediateJointPosition();
-		glm::vec2 endP = getEndJointPosition();
+		glm::vec2 endP = getEndEffectorPosition();
 
 		// draw gears
 		for (int i = 0; i < gears.size(); ++i) {
@@ -134,7 +134,7 @@ namespace kinematics {
 		assemblies.clear();
 		links.clear();
 		bodies.clear();
-		trace_marker_points.clear();
+		trace_end_effector.clear();
 
 		QDomNode node = root.firstChild();
 		while (!node.isNull()) {
@@ -160,17 +160,18 @@ namespace kinematics {
 						boost::shared_ptr<MechanicalAssembly> ass = boost::shared_ptr<MechanicalAssembly>(new MechanicalAssembly());
 
 						int end_effector_id = assembly_node.toElement().attribute("end_effector").toInt();
-						ass->marker_point = points[end_effector_id];
+						ass->end_effector = points[end_effector_id];
 
 						QDomNode assembly_part_node = assembly_node.firstChild();
 						while (!assembly_part_node.isNull()) {
 							if (assembly_part_node.toElement().tagName() == "gear") {
-								int center_id = assembly_part_node.toElement().attribute("center").toInt();
+								float x = assembly_part_node.toElement().attribute("x").toFloat();
+								float y = assembly_part_node.toElement().attribute("y").toFloat();
 								float radius = assembly_part_node.toElement().attribute("radius").toFloat();
 								float phase = assembly_part_node.toElement().attribute("phase").toFloat();
 								float speed = assembly_part_node.toElement().attribute("speed").toFloat();
 
-								ass->gears.push_back(Gear(points[center_id]->pos, radius, phase, speed));
+								ass->gears.push_back(Gear(glm::vec2(x, y), radius, phase, speed));
 							}
 							else if (assembly_part_node.toElement().tagName() == "order") {
 								int id1 = assembly_part_node.toElement().attribute("id1").toInt();
@@ -193,7 +194,7 @@ namespace kinematics {
 							assembly_part_node = assembly_part_node.nextSibling();
 						}
 
-						ass->marker_point->pos = ass->getEndJointPosition();
+						ass->end_effector->pos = ass->getEndEffectorPosition();
 						assemblies.push_back(ass);
 					}
 
@@ -208,7 +209,7 @@ namespace kinematics {
 						int order = link_node.toElement().attribute("order").toInt();
 						int start = link_node.toElement().attribute("start").toInt();
 						int end = link_node.toElement().attribute("end").toInt();
-						boost::shared_ptr<Link> link = boost::shared_ptr<Link>(new Link(points[start], points[end]));
+						boost::shared_ptr<Link> link = boost::shared_ptr<Link>(new Link(start, end, glm::length(points[start]->pos - points[end]->pos)));
 						links.push_back(link);
 
 						// set outgoing link to the point
@@ -239,7 +240,7 @@ namespace kinematics {
 			node = node.nextSibling();
 		}
 
-		trace_marker_points.resize(assemblies.size());
+		trace_end_effector.resize(assemblies.size());
 	}
 
 	void Kinematics::save(const QString& filename) {
@@ -266,32 +267,67 @@ namespace kinematics {
 			points_node.appendChild(point_node);
 		}
 
-		/*
-		// write points
+		// write assemblies
 		QDomElement assemblies_node = doc.createElement("assemblies");
 		root.appendChild(assemblies_node);
 		for (int i = 0; i < assemblies.size(); ++i) {
 			QDomElement assembly_node = doc.createElement("assembly");
+			assembly_node.setAttribute("end_effector", assemblies[i]->end_effector->id);
 
+			// write gears
 			for (int j = 0; j < assemblies[i]->gears.size(); ++j) {
 				QDomElement gear_node = doc.createElement("gear");
-				gear_node.setAttribute("center", assemblies[i]->gears[j].center);
-
-
+				gear_node.setAttribute("x", assemblies[i]->gears[j].center.x);
+				gear_node.setAttribute("y", assemblies[i]->gears[j].center.y);
+				gear_node.setAttribute("radius", assemblies[i]->gears[j].radius);
+				gear_node.setAttribute("phase", assemblies[i]->gears[j].phase);
+				gear_node.setAttribute("speed", assemblies[i]->gears[j].speed);
+				
 				assembly_node.appendChild(gear_node);
 			}
 
+			// write order
+			QDomElement order_node = doc.createElement("order");
+			order_node.setAttribute("id1", assemblies[i]->order.first);
+			order_node.setAttribute("id2", assemblies[i]->order.second);
+			assembly_node.appendChild(order_node);
+
+			// write links
+			QDomElement link1_node = doc.createElement("link1");
+			link1_node.setAttribute("length", assemblies[i]->link_length1);
+			assembly_node.appendChild(link1_node);
+			QDomElement link2_node = doc.createElement("link2");
+			link2_node.setAttribute("length", assemblies[i]->link_length2);
+			assembly_node.appendChild(link2_node);
+			QDomElement link3_node = doc.createElement("link3");
+			link3_node.setAttribute("length", assemblies[i]->link_length3);
+			assembly_node.appendChild(link3_node);
+
 			assemblies_node.appendChild(assembly_node);
 		}
-		*/
 
-		QDomElement quote = doc.createElement("quote");
-		QDomElement translation = doc.createElement("sample");
+		// write links
+		QDomElement links_node = doc.createElement("links");
+		root.appendChild(links_node);
+		for (auto it = points.begin(); it != points.end(); ++it) {
+			for (int j = 0; j < it.value()->in_links.size(); ++j) {
+				QDomElement link_node = doc.createElement("link");
+				link_node.setAttribute("order", j);
+				link_node.setAttribute("start", it.value()->in_links[j]->start);
+				link_node.setAttribute("end", it.value()->in_links[j]->end);
+				links_node.appendChild(link_node);
+			}
+		}
 
-
-
-
-
+		// write bodies
+		QDomElement bodies_node = doc.createElement("bodies");
+		root.appendChild(bodies_node);
+		for (int i = 0; i < bodies.size(); ++i) {
+			QDomElement body_node = doc.createElement("body");
+			body_node.setAttribute("id1", bodies[i].first);
+			body_node.setAttribute("id2", bodies[i].second);
+			bodies_node.appendChild(body_node);
+		}
 
 		QTextStream out(&file);
 		doc.save(out, 4);
@@ -321,20 +357,20 @@ namespace kinematics {
 
 				if (point->in_links.size() != 2) throw "forward kinematics error. Overconstrained.";
 
-				// if the parent points are not updated, postpoine updating this point
+				// if the parent points are not updated, postpone updating this point
 				boost::shared_ptr<Link> l1 = point->in_links[0];
-				if (!updated[l1->start_point->id]) {
+				if (!updated[l1->start]) {
 					queue.push_back(point);
 					continue;
 				}
 				boost::shared_ptr<Link> l2 = point->in_links[1];
-				if (!updated[l2->start_point->id]) {
+				if (!updated[l2->start]) {
 					queue.push_back(point);
 					continue;
 				}
 
 				// update this point based on two adjacent points
-				point->pos = circleCircleIntersection(l1->start_point->pos, l1->length, l2->start_point->pos, l2->length);
+				point->pos = circleCircleIntersection(points[l1->start]->pos, l1->length, points[l2->start]->pos, l2->length);
 				updated[point->id] = true;
 			}
 		}
@@ -345,7 +381,7 @@ namespace kinematics {
 
 	void Kinematics::stepForward() {
 		for (int i = 0; i < assemblies.size(); ++i) {
-			trace_marker_points[i].push_back(assemblies[i]->getEndJointPosition());
+			trace_end_effector[i].push_back(assemblies[i]->getEndEffectorPosition());
 			assemblies[i]->forward(0.03);
 		}
 
@@ -354,7 +390,7 @@ namespace kinematics {
 
 	void Kinematics::stepBackward() {
 		for (int i = 0; i < assemblies.size(); ++i) {
-			trace_marker_points[i].push_back(assemblies[i]->getEndJointPosition());
+			trace_end_effector[i].push_back(assemblies[i]->getEndEffectorPosition());
 			assemblies[i]->forward(-0.03);
 		}
 
@@ -381,10 +417,10 @@ namespace kinematics {
 		if (show_assemblies) {
 			// draw trace
 			painter.setPen(QPen(QColor(0, 0, 0), 1));
-			for (int i = 0; i < trace_marker_points.size(); ++i) {
-				if (trace_marker_points[i].size() > 0) {
-					for (int j = std::max(0, (int)trace_marker_points[i].size() - 240); j < trace_marker_points[i].size() - 1; ++j) {
-						painter.drawLine(trace_marker_points[i][j].x, trace_marker_points[i][j].y, trace_marker_points[i][j + 1].x, trace_marker_points[i][j + 1].y);
+			for (int i = 0; i < trace_end_effector.size(); ++i) {
+				if (trace_end_effector[i].size() > 0) {
+					for (int j = std::max(0, (int)trace_end_effector[i].size() - 240); j < trace_end_effector[i].size() - 1; ++j) {
+						painter.drawLine(trace_end_effector[i][j].x, trace_end_effector[i][j].y, trace_end_effector[i][j + 1].x, trace_end_effector[i][j + 1].y);
 					}
 				}
 			}
@@ -399,9 +435,9 @@ namespace kinematics {
 			// draw links
 			painter.setPen(QPen(QColor(0, 0, 0), 3));
 			for (int i = 0; i < links.size(); ++i) {
-				painter.drawLine(links[i]->start_point->pos.x, links[i]->start_point->pos.y, links[i]->end_point->pos.x, links[i]->end_point->pos.y);
-				painter.drawEllipse(QPoint(links[i]->start_point->pos.x, links[i]->start_point->pos.y), 3, 3);
-				painter.drawEllipse(QPoint(links[i]->end_point->pos.x, links[i]->end_point->pos.y), 3, 3);
+				painter.drawLine(points[links[i]->start]->pos.x, points[links[i]->start]->pos.y, points[links[i]->end]->pos.x, points[links[i]->end]->pos.y);
+				painter.drawEllipse(QPoint(points[links[i]->start]->pos.x, points[links[i]->start]->pos.y), 3, 3);
+				painter.drawEllipse(QPoint(points[links[i]->end]->pos.x, points[links[i]->end]->pos.y), 3, 3);
 			}
 		}
 	}
