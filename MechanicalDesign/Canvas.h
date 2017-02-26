@@ -25,6 +25,7 @@ public:
     ~Canvas();
 
 	void open(const QString& filename);
+	void save(const QString& filename);
 	void run();
 	void stop();
 	void showAssemblies(bool flag);

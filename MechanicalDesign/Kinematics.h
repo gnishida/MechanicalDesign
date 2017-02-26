@@ -38,10 +38,11 @@ namespace kinematics {
 		glm::vec2 center;
 		float radius;
 		float phase;
+		float speed;
 
 	public:
 		Gear() {}
-		Gear(const glm::vec2& center, float radius) : center(center), radius(radius) {}
+		Gear(const glm::vec2& center, float radius, float phase, float speed) : center(center), radius(radius), phase(phase), speed(speed) {}
 
 		glm::vec2 getLinkEndPosition();
 		void draw(QPainter& painter);
@@ -49,8 +50,8 @@ namespace kinematics {
 
 	class MechanicalAssembly {
 	public:
-		Gear gear1;
-		Gear gear2;
+		std::vector<Gear> gears;
+		std::pair<int, int> order;
 		float link_length1;
 		float link_length2;
 		float link_length3;
@@ -70,8 +71,8 @@ namespace kinematics {
 		QMap<int, boost::shared_ptr<Point>> points;
 		std::vector<boost::shared_ptr<Link>> links;
 		std::vector<boost::shared_ptr<MechanicalAssembly>> assemblies;
-		std::vector<glm::vec2> trace_marker_points;
 		std::vector<std::pair<int, int>> bodies;
+		std::vector<std::vector<glm::vec2>> trace_marker_points;
 
 		bool show_assemblies;
 		bool show_links;
@@ -80,7 +81,8 @@ namespace kinematics {
 	public:
 		Kinematics();
 
-		bool load(const QString& filename);
+		void load(const QString& filename);
+		void save(const QString& filename);
 		void forwardKinematics();
 		void stepForward();
 		void stepBackward();

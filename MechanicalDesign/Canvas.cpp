@@ -38,6 +38,10 @@ void Canvas::open(const QString& filename) {
 	update();
 }
 
+void Canvas::save(const QString& filename) {
+	kinematics.save(filename); 
+}
+
 void Canvas::run() {
 	if (animation_timer == NULL) {
 		animation_timer = new QTimer(this);
@@ -92,20 +96,14 @@ void Canvas::paintEvent(QPaintEvent *e) {
 void Canvas::mousePressEvent(QMouseEvent* e) {
 	// hit test against gears
 	for (int i = 0; i < kinematics.assemblies.size(); ++i) {
-		float dist1 = glm::length(kinematics.assemblies[i]->gear1.center - glm::vec2(e->x(), e->y()));
-		if (dist1 <= kinematics.assemblies[i]->gear1.radius) {
-			// select this gear
-			selected_gear = &kinematics.assemblies[i]->gear1;
-			prev_mouse_pt = glm::vec2(e->x(), e->y());
-			break;
-		}
-
-		float dist2 = glm::length(kinematics.assemblies[i]->gear2.center - glm::vec2(e->x(), e->y()));
-		if (dist2 <= kinematics.assemblies[i]->gear2.radius) {
-			// select this gear
-			selected_gear = &kinematics.assemblies[i]->gear2;
-			prev_mouse_pt = glm::vec2(e->x(), e->y());
-			break;
+		for (int j = 0; j < kinematics.assemblies[i]->gears.size(); ++j) {
+			float dist = glm::length(kinematics.assemblies[i]->gears[j].center - glm::vec2(e->x(), e->y()));
+			if (dist <= kinematics.assemblies[i]->gears[j].radius) {
+				// select this gear
+				selected_gear = &kinematics.assemblies[i]->gears[j];
+				prev_mouse_pt = glm::vec2(e->x(), e->y());
+				break;
+			}
 		}
 	}
 }

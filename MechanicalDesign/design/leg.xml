@@ -13,8 +13,9 @@
 	</points>
 	<assemblies>
 		<assembly end_effector="2">
-			<gear1 center="0" radius="29.45" phase="0.4"/>
-			<gear2 center="1" radius="39.68" phase="3.34159"/>
+			<gear center="0" radius="29.45" phase="0.4" speed="1"/>
+			<gear center="1" radius="39.68" phase="3.34159" speed="-1"/>
+			<order id1="0" id2="1"/>
 			<link1 length="131.5"/>
 			<link2 length="187.8"/>
 			<link3 length="90.6"/>

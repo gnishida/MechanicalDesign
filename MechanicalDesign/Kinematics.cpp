@@ -2,6 +2,8 @@
 #include <iostream>
 #include <QFile>
 #include <QDomDocument>
+#include <QTextStream>
+#include <QDate>
 
 namespace kinematics {
 	float M_PI = 3.141592653;
@@ -63,38 +65,40 @@ namespace kinematics {
 	}
 
 	glm::vec2 MechanicalAssembly::getIntermediateJointPosition() {
-		glm::vec2 p1 = gear1.getLinkEndPosition();
-		glm::vec2 p2 = gear2.getLinkEndPosition();
+		glm::vec2 p1 = gears[order.first].getLinkEndPosition();
+		glm::vec2 p2 = gears[order.second].getLinkEndPosition();
 
 		return circleCircleIntersection(p1, link_length1, p2, link_length2);
 	}
 
 	glm::vec2 MechanicalAssembly::getEndJointPosition() {
-		glm::vec2 p1 = gear1.getLinkEndPosition();
-		glm::vec2 p2 = gear2.getLinkEndPosition();
+		glm::vec2 p1 = gears[order.first].getLinkEndPosition();
+		glm::vec2 p2 = gears[order.second].getLinkEndPosition();
 
 		glm::vec2 joint = circleCircleIntersection(p1, link_length1, p2, link_length2);
-		glm::vec2 dir = joint - p1;
+		glm::vec2 dir = joint - gears[0].getLinkEndPosition();
 
-		return p1 + dir / link_length1 * (link_length1 + link_length3);
+		return gears[0].getLinkEndPosition() + dir / link_length1 * (link_length1 + link_length3);
 	}
 
 	void MechanicalAssembly::forward(float step) {
-		gear1.phase += step;
-		gear2.phase -= step;
+		for (int i = 0; i < gears.size(); ++i) {
+			gears[i].phase += step * gears[i].speed;
+		}
 
 		marker_point->pos = getEndJointPosition();
 	}
 
 	void MechanicalAssembly::draw(QPainter& painter) {
-		glm::vec2 p1 = gear1.getLinkEndPosition();
-		glm::vec2 p2 = gear2.getLinkEndPosition();
+		glm::vec2 p1 = gears[0].getLinkEndPosition();
+		glm::vec2 p2 = gears[1].getLinkEndPosition();
 		glm::vec2 intP = getIntermediateJointPosition();
 		glm::vec2 endP = getEndJointPosition();
 
 		// draw gears
-		gear1.draw(painter);
-		gear2.draw(painter);
+		for (int i = 0; i < gears.size(); ++i) {
+			gears[i].draw(painter);
+		}
 
 		// draw links
 		painter.setPen(QPen(QColor(0, 0, 255), 3));
@@ -115,21 +119,22 @@ namespace kinematics {
 		show_bodies = true;
 	}
 
-	bool Kinematics::load(const QString& filename) {
+	void Kinematics::load(const QString& filename) {
 		QFile file(filename);
-		file.open(QFile::ReadOnly | QFile::Text);
+		if (!file.open(QFile::ReadOnly | QFile::Text)) throw "Fild cannot open.";
 
 		QDomDocument doc;
 		doc.setContent(&file);
 
 		QDomElement root = doc.documentElement();
-		if (root.tagName() != "design")	return false;
+		if (root.tagName() != "design")	throw "Invalid file format.";
 
 		// clear the data
 		points.clear();
 		assemblies.clear();
 		links.clear();
 		bodies.clear();
+		trace_marker_points.clear();
 
 		QDomNode node = root.firstChild();
 		while (!node.isNull()) {
@@ -159,21 +164,18 @@ namespace kinematics {
 
 						QDomNode assembly_part_node = assembly_node.firstChild();
 						while (!assembly_part_node.isNull()) {
-							if (assembly_part_node.toElement().tagName() == "gear1") {
+							if (assembly_part_node.toElement().tagName() == "gear") {
 								int center_id = assembly_part_node.toElement().attribute("center").toInt();
 								float radius = assembly_part_node.toElement().attribute("radius").toFloat();
 								float phase = assembly_part_node.toElement().attribute("phase").toFloat();
+								float speed = assembly_part_node.toElement().attribute("speed").toFloat();
 
-								ass->gear1 = Gear(points[center_id]->pos, radius);
-								ass->gear1.phase = phase;
+								ass->gears.push_back(Gear(points[center_id]->pos, radius, phase, speed));
 							}
-							else if (assembly_part_node.toElement().tagName() == "gear2") {
-								int center_id = assembly_part_node.toElement().attribute("center").toInt();
-								float radius = assembly_part_node.toElement().attribute("radius").toFloat();
-								float phase = assembly_part_node.toElement().attribute("phase").toFloat();
-
-								ass->gear2 = Gear(points[center_id]->pos, radius);
-								ass->gear2.phase = phase;
+							else if (assembly_part_node.toElement().tagName() == "order") {
+								int id1 = assembly_part_node.toElement().attribute("id1").toInt();
+								int id2 = assembly_part_node.toElement().attribute("id2").toInt();
+								ass->order = std::make_pair(id1, id2);
 							}
 							else if (assembly_part_node.toElement().tagName() == "link1") {
 								float length = assembly_part_node.toElement().attribute("length").toFloat();
@@ -236,6 +238,63 @@ namespace kinematics {
 
 			node = node.nextSibling();
 		}
+
+		trace_marker_points.resize(assemblies.size());
+	}
+
+	void Kinematics::save(const QString& filename) {
+		QFile file(filename);
+		if (!file.open(QFile::WriteOnly)) throw "File cannot open.";
+
+		QDomDocument doc;
+
+		// set root node
+		QDomElement root = doc.createElement("design");
+		root.setAttribute("author", "Gen Nishida");
+		root.setAttribute("version", "1.0");
+		root.setAttribute("date", QDate::currentDate().toString("MM/dd/yyyy"));
+		doc.appendChild(root);
+
+		// write points
+		QDomElement points_node = doc.createElement("points");
+		root.appendChild(points_node);
+		for (auto it = points.begin(); it != points.end(); ++it) {
+			QDomElement point_node = doc.createElement("point");
+			point_node.setAttribute("id", it.key());
+			point_node.setAttribute("x", it.value()->pos.x);
+			point_node.setAttribute("y", it.value()->pos.y);
+			points_node.appendChild(point_node);
+		}
+
+		/*
+		// write points
+		QDomElement assemblies_node = doc.createElement("assemblies");
+		root.appendChild(assemblies_node);
+		for (int i = 0; i < assemblies.size(); ++i) {
+			QDomElement assembly_node = doc.createElement("assembly");
+
+			for (int j = 0; j < assemblies[i]->gears.size(); ++j) {
+				QDomElement gear_node = doc.createElement("gear");
+				gear_node.setAttribute("center", assemblies[i]->gears[j].center);
+
+
+				assembly_node.appendChild(gear_node);
+			}
+
+			assemblies_node.appendChild(assembly_node);
+		}
+		*/
+
+		QDomElement quote = doc.createElement("quote");
+		QDomElement translation = doc.createElement("sample");
+
+
+
+
+
+
+		QTextStream out(&file);
+		doc.save(out, 4);
 	}
 
 	void Kinematics::forwardKinematics() {
@@ -286,7 +345,7 @@ namespace kinematics {
 
 	void Kinematics::stepForward() {
 		for (int i = 0; i < assemblies.size(); ++i) {
-			trace_marker_points.push_back(assemblies[i]->getEndJointPosition());
+			trace_marker_points[i].push_back(assemblies[i]->getEndJointPosition());
 			assemblies[i]->forward(0.03);
 		}
 
@@ -295,7 +354,7 @@ namespace kinematics {
 
 	void Kinematics::stepBackward() {
 		for (int i = 0; i < assemblies.size(); ++i) {
-			trace_marker_points.push_back(assemblies[i]->getEndJointPosition());
+			trace_marker_points[i].push_back(assemblies[i]->getEndJointPosition());
 			assemblies[i]->forward(-0.03);
 		}
 
@@ -322,9 +381,11 @@ namespace kinematics {
 		if (show_assemblies) {
 			// draw trace
 			painter.setPen(QPen(QColor(0, 0, 0), 1));
-			if (trace_marker_points.size() > 0) {
-				for (int i = std::max(0, (int)trace_marker_points.size() - 240); i < trace_marker_points.size() - 1; ++i) {
-					painter.drawLine(trace_marker_points[i].x, trace_marker_points[i].y, trace_marker_points[i + 1].x, trace_marker_points[i + 1].y);
+			for (int i = 0; i < trace_marker_points.size(); ++i) {
+				if (trace_marker_points[i].size() > 0) {
+					for (int j = std::max(0, (int)trace_marker_points[i].size() - 240); j < trace_marker_points[i].size() - 1; ++j) {
+						painter.drawLine(trace_marker_points[i][j].x, trace_marker_points[i][j].y, trace_marker_points[i][j + 1].x, trace_marker_points[i][j + 1].y);
+					}
 				}
 			}
 

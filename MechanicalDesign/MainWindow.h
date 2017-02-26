@@ -20,6 +20,7 @@ public:
 
 public slots:
 	void onOpen();
+	void onSave();
 	void onRun();
 	void onStop();
 	void onShowAll();
