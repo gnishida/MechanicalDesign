@@ -11,9 +11,9 @@
 			<gear x="588" y="264" radius="26.3" phase="3" speed="1"/>
 			<gear x="462" y="274" radius="24.08" phase="0.8" speed="1"/>
 			<order id1="1" id2="0"/>
-			<link1 length="98.06"/>
-			<link2 length="96.54"/>
-			<link3 length="116.5"/>
+			<link length="96.54"/>
+			<link length="98.06"/>
+			<link length="116.5"/>
 		</assembly>
 	</assemblies>
 	<links>

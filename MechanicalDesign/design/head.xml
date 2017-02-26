@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<design author="Gen Nishida" version="1.0" date="2/26/2017">
+	<points>
+		<point id="0" x="469" y="114"/>
+		<point id="1" x="572" y="134"/>
+	</points>
+	<assemblies>
+		<assembly end_effector="1">
+			<gear x="469" y="114" radius="0.1" phase="0" speed="1"/>
+			<gear x="457" y="136" radius="3.3" phase="1.05" speed="1"/>
+			<order id1="1" id2="0"/>
+			<link length="30.8"/>
+			<link length="45.65"/>
+			<link length="74.15"/>
+		</assembly>
+	</assemblies>
+	<links>
+		<link order="0" start="0" end="1"/>
+	</links>
+	<bodies>
+		<body id1="0" id2="1"/>
+	</bodies>
+</design>

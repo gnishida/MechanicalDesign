@@ -52,9 +52,7 @@ namespace kinematics {
 	public:
 		std::vector<Gear> gears;
 		std::pair<int, int> order;
-		float link_length1;
-		float link_length2;
-		float link_length3;
+		std::vector<float> link_lengths;
 		boost::shared_ptr<Point> end_effector;
 
 	public:

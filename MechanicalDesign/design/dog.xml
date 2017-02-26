@@ -30,6 +30,10 @@
         <point id="19" y="268.548" x="113.101"/>
         <point id="20" y="283.322" x="137.22"/>
         <point id="21" y="336.702" x="207.843"/>
+        
+        <!-- head -->
+        <point id="22" x="451" y="144"/>
+        <point id="23" x="558" y="164"/>
 	</points>
 	<assemblies>
 		<!-- arm assembly -->
@@ -71,6 +75,16 @@
             <link length="93.9"/>
             <link length="45.3"/>
         </assembly>
+        
+        <!-- head assembly -->
+        <assembly end_effector="23">
+			<gear x="455" y="144" radius="0.1" phase="0" speed="1"/>
+			<gear x="443" y="166" radius="3.3" phase="1.05" speed="1"/>
+			<order id1="1" id2="0"/>
+			<link length="30.8"/>
+			<link length="45.65"/>
+			<link length="74.15"/>
+		</assembly>
 	</assemblies>
 	<links>
 		<!-- arm links -->
@@ -108,6 +122,9 @@
         <link order="1" start="15" end="20"/>
         <link order="0" start="19" end="21"/>
         <link order="1" start="20" end="21"/>
+        
+        <!-- head link -->
+        <link order="0" start="22" end="23"/>
 	</links>
 	<bodies>
 		<!-- torse -->
@@ -130,5 +147,8 @@
         <body id1="16" id2="17"/>
         <body id1="17" id2="20"/>
         <body id1="20" id2="21"/>
+        
+        <!-- head -->
+        <body id1="22" id2="23"/>
 	</bodies>
 </design>

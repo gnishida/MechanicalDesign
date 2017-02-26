@@ -22,9 +22,9 @@
 			<gear x="426" y="162" radius="13.15" phase="3" speed="1"/>
 			<gear x="363" y="167" radius="12.04" phase="0.8" speed="1"/>
 			<order id1="1" id2="0"/>
-			<link1 length="49.03"/>
-			<link2 length="48.27"/>
-			<link3 length="58.25"/>
+			<link length="48.27"/>
+			<link length="49.03"/>
+			<link length="58.25"/>
 		</assembly>
 		
 		<!-- leg assembly -->
@@ -32,9 +32,9 @@
 			<gear x="245.5" y="171" radius="14.725" phase="0.4" speed="1"/>
 			<gear x="312.5" y="179" radius="19.84" phase="3.34159" speed="-1"/>
 			<order id1="0" id2="1"/>
-			<link1 length="65.75"/>
-			<link2 length="93.9"/>
-			<link3 length="45.3"/>
+			<link length="65.75"/>
+			<link length="93.9"/>
+			<link length="45.3"/>
 		</assembly>
 	</assemblies>
 	<links>

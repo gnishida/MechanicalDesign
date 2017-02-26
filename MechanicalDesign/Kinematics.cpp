@@ -68,17 +68,17 @@ namespace kinematics {
 		glm::vec2 p1 = gears[order.first].getLinkEndPosition();
 		glm::vec2 p2 = gears[order.second].getLinkEndPosition();
 
-		return circleCircleIntersection(p1, link_length1, p2, link_length2);
+		return circleCircleIntersection(p1, link_lengths[order.first], p2, link_lengths[order.second]);
 	}
 
 	glm::vec2 MechanicalAssembly::getEndEffectorPosition() {
 		glm::vec2 p1 = gears[order.first].getLinkEndPosition();
 		glm::vec2 p2 = gears[order.second].getLinkEndPosition();
 
-		glm::vec2 joint = circleCircleIntersection(p1, link_length1, p2, link_length2);
+		glm::vec2 joint = circleCircleIntersection(p1, link_lengths[order.first], p2, link_lengths[order.second]);
 		glm::vec2 dir = joint - gears[0].getLinkEndPosition();
 
-		return gears[0].getLinkEndPosition() + dir / link_length1 * (link_length1 + link_length3);
+		return gears[0].getLinkEndPosition() + dir / link_lengths[0] * (link_lengths[0] + link_lengths[2]);
 	}
 
 	void MechanicalAssembly::forward(float step) {
@@ -178,17 +178,9 @@ namespace kinematics {
 								int id2 = assembly_part_node.toElement().attribute("id2").toInt();
 								ass->order = std::make_pair(id1, id2);
 							}
-							else if (assembly_part_node.toElement().tagName() == "link1") {
+							else if (assembly_part_node.toElement().tagName() == "link") {
 								float length = assembly_part_node.toElement().attribute("length").toFloat();
-								ass->link_length1 = length;
-							}
-							else if (assembly_part_node.toElement().tagName() == "link2") {
-								float length = assembly_part_node.toElement().attribute("length").toFloat();
-								ass->link_length2 = length;
-							}
-							else if (assembly_part_node.toElement().tagName() == "link3") {
-								float length = assembly_part_node.toElement().attribute("length").toFloat();
-								ass->link_length3 = length;
+								ass->link_lengths.push_back(length);
 							}
 
 							assembly_part_node = assembly_part_node.nextSibling();
@@ -216,7 +208,7 @@ namespace kinematics {
 						points[start]->out_links.push_back(link);
 
 						// set incoming link to the point
-						if (points[end]->in_links.size() == 0) points[end]->in_links.resize(2);
+						if (points[end]->in_links.size() < order + 1) points[end]->in_links.resize(order + 1);
 						points[end]->in_links[order] = link;
 					}
 
@@ -293,15 +285,11 @@ namespace kinematics {
 			assembly_node.appendChild(order_node);
 
 			// write links
-			QDomElement link1_node = doc.createElement("link1");
-			link1_node.setAttribute("length", assemblies[i]->link_length1);
-			assembly_node.appendChild(link1_node);
-			QDomElement link2_node = doc.createElement("link2");
-			link2_node.setAttribute("length", assemblies[i]->link_length2);
-			assembly_node.appendChild(link2_node);
-			QDomElement link3_node = doc.createElement("link3");
-			link3_node.setAttribute("length", assemblies[i]->link_length3);
-			assembly_node.appendChild(link3_node);
+			for (int j = 0; j < assemblies[i]->link_lengths.size(); ++j) {
+				QDomElement link_node = doc.createElement("link");
+				link_node.setAttribute("length", assemblies[i]->link_lengths[j]);
+				assembly_node.appendChild(link_node);
+			}
 
 			assemblies_node.appendChild(assembly_node);
 		}
@@ -355,7 +343,7 @@ namespace kinematics {
 					continue;
 				}
 
-				if (point->in_links.size() != 2) throw "forward kinematics error. Overconstrained.";
+				if (point->in_links.size() > 2) throw "forward kinematics error. Overconstrained.";
 
 				// if the parent points are not updated, postpone updating this point
 				boost::shared_ptr<Link> l1 = point->in_links[0];
@@ -363,14 +351,19 @@ namespace kinematics {
 					queue.push_back(point);
 					continue;
 				}
-				boost::shared_ptr<Link> l2 = point->in_links[1];
-				if (!updated[l2->start]) {
-					queue.push_back(point);
-					continue;
-				}
+				if (point->in_links.size() == 2) {
+					boost::shared_ptr<Link> l2 = point->in_links[1];
+					if (!updated[l2->start]) {
+						queue.push_back(point);
+						continue;
+					}
 
-				// update this point based on two adjacent points
-				point->pos = circleCircleIntersection(points[l1->start]->pos, l1->length, points[l2->start]->pos, l2->length);
+					// update this point based on two adjacent points
+					point->pos = circleCircleIntersection(points[l1->start]->pos, l1->length, points[l2->start]->pos, l2->length);
+				}
+				else {
+					// pin joint
+				}
 				updated[point->id] = true;
 			}
 		}
