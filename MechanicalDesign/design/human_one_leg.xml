@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<design author="Gen Nishida" version="1.0" date="2/26/2017">
+	<points>
+		<point id="0" x="199" y="144"/>
+		<point id="1" x="362" y="100"/>
+		<point id="2" x="389" y="191"/>
+		<point id="3" x="434" y="219"/>
+		<point id="4" x="320" y="244"/>
+		<point id="5" x="376" y="360"/>
+	</points>
+	<assemblies>
+		<assembly end_effector="2">
+			<gear x="203" y="396" radius="16.28" phase="2.356" speed="1"/>
+			<gear x="346" y="416" radius="0" phase="0" speed="1"/>
+			<order id1="1" id2="0"/>
+			<link length="155.72"/>
+			<link length="132.4"/>
+			<link length="137.36"/>
+		</assembly>
+		<assembly end_effector="5">
+			<gear x="362" y="591" radius="45" phase="0.98" speed="1"/>
+			<gear x="476" y="593" radius="0" phase="0" speed="1"/>
+			<order id1="1" id2="0"/>
+			<link length="137.23"/>
+			<link length="140.12"/>
+			<link length="130.1"/>
+		</assembly>
+	</assemblies>
+	<links>
+		<link order="1" start="0" end="1"/>
+		<link order="0" start="2" end="1"/>
+		<link order="1" start="1" end="3"/>
+		<link order="0" start="2" end="3"/>
+		<link order="0" start="3" end="4"/>
+		<link order="1" start="5" end="4"/>
+	</links>
+	<bodies>
+		<body id1="0" id2="1"/>
+		<body id1="1" id2="3"/>
+		<body id1="3" id2="4"/>
+		<body id1="4" id2="5"/>
+	</bodies>
+</design>
