@@ -3,6 +3,7 @@
 #include <QPainter>
 #include <vector>
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <boost/shared_ptr.hpp>
 #include <QMap>
 
@@ -64,12 +65,22 @@ namespace kinematics {
 		void draw(QPainter& painter);
 	};
 
+	class Part {
+	public:
+		int pivot1;
+		int pivot2;
+		std::vector<glm::vec2> points;
+
+	public:
+		Part(int pivot1, int pivot2) : pivot1(pivot1), pivot2(pivot2) {}
+	};
+
 	class Kinematics {
 	public:
 		QMap<int, boost::shared_ptr<Point>> points;
 		std::vector<boost::shared_ptr<Link>> links;
 		std::vector<boost::shared_ptr<MechanicalAssembly>> assemblies;
-		std::vector<std::pair<int, int>> bodies;
+		std::vector<Part> bodies;
 		std::vector<std::vector<glm::vec2>> trace_end_effector;
 
 		bool show_assemblies;

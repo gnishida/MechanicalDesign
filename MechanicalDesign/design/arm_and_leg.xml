@@ -1,72 +1,138 @@
 <?xml version="1.0"?>
 <design author="Gen Nishida" version="1.0" date="2/26/2017">
 	<points>
-		<!-- arm points -->
-		<point id="0" x="391" y="269"/>
-		<point id="1" x="451" y="144"/>
-		<point id="2" x="435" y="263"/>
-		<point id="3" x="523" y="386"/>
+		<!-- arm -->
+		<point id="0" x="473" y="395"/>
+		<point id="1" x="532" y="270"/>
+		<point id="2" x="516" y="390"/>
+		<point id="3" x="604" y="512"/>
 		
-		<!-- leg points -->
-		<point id="4" x="280.5" y="252"/>
-		<point id="5" x="197.5" y="166"/>
-		<point id="6" x="132.5" y="239"/>
-		<point id="7" x="141.5" y="202"/>
-		<point id="8" x="57.5" y="218"/>
-		<point id="9" x="53.5" y="246"/>
-		<point id="10" x="32.5" y="332"/>
+		<!-- leg -->
+		<point id="4" x="262" y="327"/>
+		<point id="5" x="278" y="242"/>
+		<point id="6" x="213" y="315"/>
+		<point id="7" x="222" y="278"/>
+		<point id="8" x="138" y="294"/>
+		<point id="9" x="133" y="322"/>
+		<point id="10" x="101" y="426"/>
 	</points>
 	<assemblies>
 		<!-- arm assembly -->
 		<assembly end_effector="0">
-			<gear x="426" y="162" radius="13.15" phase="3" speed="1"/>
-			<gear x="363" y="167" radius="12.04" phase="0.8" speed="1"/>
+			<gear x="508" y="288" radius="14.14" phase="3" speed="1"/>
+			<gear x="443" y="292" radius="13.45" phase="0.716" speed="1"/>
 			<order id1="1" id2="0"/>
-			<link length="48.27"/>
-			<link length="49.03"/>
-			<link length="58.25"/>
+			<link length="49.24"/>
+			<link length="47.634"/>
+			<link length="57.87"/>
 		</assembly>
 		
 		<!-- leg assembly -->
 		<assembly end_effector="4">
-			<gear x="245.5" y="171" radius="14.725" phase="0.4" speed="1"/>
-			<gear x="312.5" y="179" radius="19.84" phase="3.34159" speed="-1"/>
+			<gear x="325" y="240" radius="14.866" phase="0.721" speed="1"/>
+			<gear x="392" y="256" radius="17.263" phase="3.318" speed="-1"/>
 			<order id1="0" id2="1"/>
-			<link length="65.75"/>
-			<link length="93.9"/>
-			<link length="45.3"/>
+			<link length="62.936"/>
+			<link length="93.022"/>
+			<link length="43.863"/>
 		</assembly>
 	</assemblies>
 	<links>
-		<!-- arm links -->
+		<!-- arm link -->
 		<link order="0" start="0" end="2"/>
 		<link order="1" start="1" end="2"/>
 		<link order="0" start="0" end="3"/>
 		<link order="1" start="2" end="3"/>
 		
-		<!-- leg links -->
+		<!-- leg link -->
 		<link order="1" start="4" end="6"/>
 		<link order="0" start="5" end="6"/>
 		<link order="0" start="5" end="7"/>
 		<link order="1" start="6" end="7"/>
 		<link order="0" start="7" end="8"/>
+		<link order="1" start="9" end="8"/>
 		<link order="1" start="4" end="9"/>
 		<link order="0" start="6" end="9"/>
 		<link order="0" start="8" end="10"/>
-		<link order="1" start="9" end="8"/>
 		<link order="1" start="9" end="10"/>
 	</links>
 	<bodies>
-		<!-- torse -->
-		<body id1="1" id2="5"/>
-		
-		<!-- arm body -->
-		<body id1="1" id2="2"/>
-		<body id1="2" id2="3"/>
-		
-		<!-- leg body -->
-		<body id1="5" id2="6"/>
-		<body id1="6" id2="9"/>
-		<body id1="9" id2="10"/>
+		<!-- arm -->
+		<body id1="1" id2="2">
+			<point x="524" y="239"/>
+			<point x="546" y="248"/>
+			<point x="562" y="267"/>
+			<point x="568" y="298"/>
+			<point x="550" y="338"/>
+			<point x="539" y="388"/>
+			<point x="522" y="407"/>
+			<point x="505" y="408"/>
+			<point x="492" y="393"/>
+			<point x="497" y="319"/>
+			<point x="490" y="272"/>
+			<point x="496" y="251"/>
+			<point x="508" y="242"/>
+		</body>
+		<body id1="2" id2="3">
+			<point x="463" y="379"/>
+			<point x="516" y="379"/>
+			<point x="537" y="390"/>
+			<point x="554" y="430"/>
+			<point x="583" y="481"/>
+			<point x="615" y="497"/>
+			<point x="619" y="512"/>
+			<point x="611" y="522"/>
+			<point x="596" y="527"/>
+			<point x="583" y="520"/>
+			<point x="572" y="516"/>
+			<point x="561" y="497"/>
+			<point x="516" y="449"/>
+			<point x="469" y="406"/>
+			<point x="456" y="386"/>
+		</body>
+
+		<!-- leg -->
+		<body id1="5" id2="6">
+			<point x="274" y="217"/>
+			<point x="292" y="222"/>
+			<point x="305" y="236"/>
+			<point x="302" y="258"/>
+			<point x="289" y="286"/>
+			<point x="267" y="308"/>
+			<point x="216" y="341"/>
+			<point x="197" y="335"/>
+			<point x="189" y="318"/>
+			<point x="197" y="292"/>
+			<point x="249" y="229"/>
+		</body>
+		<body id1="6" id2="9">
+			<point x="214" y="291"/>
+			<point x="239" y="293"/>
+			<point x="278" y="317"/>
+			<point x="272" y="331"/>
+			<point x="217" y="343"/>
+			<point x="195" y="336"/>
+			<point x="176" y="338"/>
+			<point x="142" y="351"/>
+			<point x="118" y="338"/>
+			<point x="117" y="318"/>
+			<point x="127" y="310"/>
+			<point x="160" y="308"/>
+		</body>
+		<body id1="9" id2="10">
+			<point x="123" y="269"/>
+			<point x="132" y="272"/>
+			<point x="159" y="325"/>
+			<point x="125" y="400"/>
+			<point x="124" y="418"/>
+			<point x="128" y="435"/>
+			<point x="127" y="444"/>
+			<point x="115" y="451"/>
+			<point x="97" y="446"/>
+			<point x="88" y="434"/>
+			<point x="86" y="419"/>
+			<point x="99" y="392"/>
+			<point x="114" y="284"/>
+		</body>
 	</bodies>
 </design>

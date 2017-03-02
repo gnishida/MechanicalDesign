@@ -222,7 +222,31 @@ namespace kinematics {
 						// add a body
 						int id1 = body_node.toElement().attribute("id1").toInt();
 						int id2 = body_node.toElement().attribute("id2").toInt();
-						bodies.push_back(std::make_pair(id1, id2));
+						Part part(id1, id2);
+
+						// setup rotation matrix
+						glm::vec2 dir = points[id2]->pos - points[id1]->pos;
+						float angle = atan2f(dir.y, dir.x);
+						glm::vec2 p1 = (points[id1]->pos + points[id2]->pos) * 0.5f;
+						glm::mat4x4 model;
+						model = glm::rotate(model, -angle, glm::vec3(0, 0, 1));						
+												
+						QDomNode point_node = body_node.firstChild();
+						while (!point_node.isNull()) {
+							if (point_node.toElement().tagName() == "point") {
+								float x = point_node.toElement().attribute("x").toFloat();
+								float y = point_node.toElement().attribute("y").toFloat();
+
+								// convert the coordinates to the local coordinate system
+								glm::vec2 rotated_p = glm::vec2(model * glm::vec4(x - p1.x, y - p1.y, 0, 1));
+								
+								part.points.push_back(rotated_p);
+							}
+
+							point_node = point_node.nextSibling();
+						}
+
+						bodies.push_back(part);
 					}
 
 					body_node = body_node.nextSibling();
@@ -312,9 +336,26 @@ namespace kinematics {
 		root.appendChild(bodies_node);
 		for (int i = 0; i < bodies.size(); ++i) {
 			QDomElement body_node = doc.createElement("body");
-			body_node.setAttribute("id1", bodies[i].first);
-			body_node.setAttribute("id2", bodies[i].second);
+			body_node.setAttribute("id1", bodies[i].pivot1);
+			body_node.setAttribute("id2", bodies[i].pivot2);
 			bodies_node.appendChild(body_node);
+
+			// setup rotation matrix
+			glm::vec2 dir = points[bodies[i].pivot2]->pos - points[bodies[i].pivot1]->pos;
+			float angle = atan2f(dir.y, dir.x);
+			glm::vec2 p1 = (points[bodies[i].pivot1]->pos + points[bodies[i].pivot2]->pos) * 0.5f;
+			glm::mat4x4 model;
+			model = glm::rotate(model, angle, glm::vec3(0, 0, 1));
+			
+			for (int k = 0; k < bodies[i].points.size(); ++k) {
+				// convert the coordinates to the local coordinate system
+				glm::vec2 rotated_p = glm::vec2(model * glm::vec4(bodies[i].points[k].x, bodies[i].points[k].y, 0, 1)) + p1;
+
+				QDomElement point_node = doc.createElement("point");
+				point_node.setAttribute("x", rotated_p.x);
+				point_node.setAttribute("y", rotated_p.y);
+				body_node.appendChild(point_node);
+			}
 		}
 
 		QTextStream out(&file);
@@ -396,20 +437,24 @@ namespace kinematics {
 				painter.save();
 				painter.setPen(QPen(QColor(0, 0, 0), 1));
 				painter.setBrush(QBrush(QColor(0, 255, 0, 60)));
-				glm::vec2 dir1 = points[bodies[i].second]->pos - points[bodies[i].first]->pos;
-				glm::vec2 p1 = (points[bodies[i].first]->pos + points[bodies[i].second]->pos) * 0.5f;
-				float ang1 = atan2f(dir1.y, dir1.x) / M_PI * 180;
+				glm::vec2 dir = points[bodies[i].pivot2]->pos - points[bodies[i].pivot1]->pos;
+				float angle = atan2f(dir.y, dir.x) / M_PI * 180;
+				glm::vec2 p1 = (points[bodies[i].pivot1]->pos + points[bodies[i].pivot2]->pos) * 0.5f;
 				painter.translate(p1.x, p1.y);
-				painter.rotate(ang1);
-				painter.drawEllipse(QPointF(0, 0), glm::length(dir1) * 0.6, glm::length(dir1) * 0.2);
+				painter.rotate(angle);
+				std::vector<QPointF> points;
+				for (int k = 0; k < bodies[i].points.size(); ++k) {
+					points.push_back(QPointF(bodies[i].points[k].x, bodies[i].points[k].y));
+				}
+				painter.drawPolygon(points.data(), points.size());
+				//painter.drawEllipse(QPointF(0, 0), glm::length(dir1) * 0.6, glm::length(dir1) * 0.2);
 				painter.restore();
-
 			}
 		}
 
 		if (show_assemblies) {
 			// draw trace
-			painter.setPen(QPen(QColor(0, 0, 0), 1));
+			painter.setPen(QPen(QColor(255, 0, 0), 1));
 			for (int i = 0; i < trace_end_effector.size(); ++i) {
 				if (trace_end_effector[i].size() > 0) {
 					for (int j = std::max(0, (int)trace_end_effector[i].size() - 240); j < trace_end_effector[i].size() - 1; ++j) {

@@ -1,0 +1,72 @@
+<?xml version="1.0"?>
+<design author="Gen Nishida" version="1.0" date="2/26/2017">
+	<points>
+		<!-- arm points -->
+		<point id="0" x="391" y="269"/>
+		<point id="1" x="451" y="144"/>
+		<point id="2" x="435" y="263"/>
+		<point id="3" x="523" y="386"/>
+		
+		<!-- leg points -->
+		<point id="4" x="280.5" y="252"/>
+		<point id="5" x="197.5" y="166"/>
+		<point id="6" x="132.5" y="239"/>
+		<point id="7" x="141.5" y="202"/>
+		<point id="8" x="57.5" y="218"/>
+		<point id="9" x="53.5" y="246"/>
+		<point id="10" x="32.5" y="332"/>
+	</points>
+	<assemblies>
+		<!-- arm assembly -->
+		<assembly end_effector="0">
+			<gear x="426" y="162" radius="13.15" phase="3" speed="1"/>
+			<gear x="363" y="167" radius="12.04" phase="0.8" speed="1"/>
+			<order id1="1" id2="0"/>
+			<link length="48.27"/>
+			<link length="49.03"/>
+			<link length="58.25"/>
+		</assembly>
+		
+		<!-- leg assembly -->
+		<assembly end_effector="4">
+			<gear x="245.5" y="171" radius="14.725" phase="0.4" speed="1"/>
+			<gear x="312.5" y="179" radius="19.84" phase="3.34159" speed="-1"/>
+			<order id1="0" id2="1"/>
+			<link length="65.75"/>
+			<link length="93.9"/>
+			<link length="45.3"/>
+		</assembly>
+	</assemblies>
+	<links>
+		<!-- arm links -->
+		<link order="0" start="0" end="2"/>
+		<link order="1" start="1" end="2"/>
+		<link order="0" start="0" end="3"/>
+		<link order="1" start="2" end="3"/>
+		
+		<!-- leg links -->
+		<link order="1" start="4" end="6"/>
+		<link order="0" start="5" end="6"/>
+		<link order="0" start="5" end="7"/>
+		<link order="1" start="6" end="7"/>
+		<link order="0" start="7" end="8"/>
+		<link order="1" start="4" end="9"/>
+		<link order="0" start="6" end="9"/>
+		<link order="0" start="8" end="10"/>
+		<link order="1" start="9" end="8"/>
+		<link order="1" start="9" end="10"/>
+	</links>
+	<bodies>
+		<!-- torse -->
+		<body id1="1" id2="5"/>
+		
+		<!-- arm body -->
+		<body id1="1" id2="2"/>
+		<body id1="2" id2="3"/>
+		
+		<!-- leg body -->
+		<body id1="5" id2="6"/>
+		<body id1="6" id2="9"/>
+		<body id1="9" id2="10"/>
+	</bodies>
+</design>
