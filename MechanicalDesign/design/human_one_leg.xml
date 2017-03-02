@@ -35,9 +35,81 @@
 		<link order="1" start="5" end="4"/>
 	</links>
 	<bodies>
-		<body id1="0" id2="1"/>
-		<body id1="1" id2="3"/>
-		<body id1="3" id2="4"/>
-		<body id1="4" id2="5"/>
+		<body id1="0" id2="1">
+			<point x="303" y="131"/>
+			<point x="317" y="117"/>
+			<point x="353" y="95"/>
+			<point x="369" y="96"/>
+			<point x="378" y="107"/>
+			<point x="372" y="118"/>
+			<point x="364" y="127"/>
+			<point x="340" y="140"/>
+			<point x="307" y="155"/>
+			<point x="295" y="156"/>
+			<point x="280" y="160"/>
+			<point x="236" y="162"/>
+			<point x="217" y="165"/>
+			<point x="203" y="154"/>
+			<point x="197" y="137"/>
+			<point x="209" y="137"/>
+			<point x="229" y="150"/>
+			<point x="283" y="132"/>
+		</body>
+		<body id1="1" id2="3">
+			<point x="305" y="57"/>
+			<point x="323" y="56"/>
+			<point x="334" y="63"/>
+			<point x="345" y="87"/>
+			<point x="365" y="90"/>
+			<point x="381" y="99"/>
+			<point x="396" y="111"/>
+			<point x="406" y="124"/>
+			<point x="427" y="153"/>
+			<point x="438" y="175"/>
+			<point x="454" y="198"/>
+			<point x="457" y="215"/>
+			<point x="450" y="227"/>
+			<point x="435" y="234"/>
+			<point x="413" y="224"/>
+			<point x="390" y="193"/>
+			<point x="361" y="168"/>
+			<point x="348" y="150"/>
+			<point x="329" y="110"/>
+			<point x="316" y="108"/>
+			<point x="298" y="96"/>
+			<point x="292" y="78"/>
+		</body>
+		<body id1="3" id2="4">
+			<point x="389" y="207"/>
+			<point x="431" y="201"/>
+			<point x="443" y="203"/>
+			<point x="453" y="215"/>
+			<point x="449" y="228"/>
+			<point x="414" y="245"/>
+			<point x="375" y="253"/>
+			<point x="318" y="253"/>
+			<point x="310" y="247"/>
+			<point x="311" y="235"/>
+			<point x="352" y="216"/>
+		</body>
+		<body id1="4" id2="5">
+			<point x="311" y="234"/>
+			<point x="322" y="233"/>
+			<point x="343" y="241"/>
+			<point x="359" y="257"/>
+			<point x="369" y="281"/>
+			<point x="388" y="316"/>
+			<point x="399" y="320"/>
+			<point x="400" y="329"/>
+			<point x="389" y="343"/>
+			<point x="377" y="363"/>
+			<point x="362" y="360"/>
+			<point x="362" y="356"/>
+			<point x="375" y="351"/>
+			<point x="376" y="325"/>
+			<point x="357" y="296"/>
+			<point x="337" y="275"/>
+			<point x="310" y="248"/>
+		</body>
 	</bodies>
 </design>

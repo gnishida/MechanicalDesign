@@ -11,7 +11,7 @@
 class Canvas : public QWidget {
 Q_OBJECT
 
-private:
+public:
 	bool ctrlPressed;
 	bool shiftPressed;
 

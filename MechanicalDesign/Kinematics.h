@@ -51,17 +51,18 @@ namespace kinematics {
 
 	class MechanicalAssembly {
 	public:
+		float phase;
 		std::vector<Gear> gears;
 		std::pair<int, int> order;
 		std::vector<float> link_lengths;
 		boost::shared_ptr<Point> end_effector;
 
 	public:
-		MechanicalAssembly() {}
+		MechanicalAssembly() : phase(3.14) {}
 
 		glm::vec2 getIntermediateJointPosition();
 		glm::vec2 getEndEffectorPosition();
-		void forward(float step);
+		void forward(float time_step);
 		void draw(QPainter& painter);
 	};
 

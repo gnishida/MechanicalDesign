@@ -38,6 +38,8 @@
     </property>
     <addaction name="actionRun"/>
     <addaction name="actionStop"/>
+    <addaction name="separator"/>
+    <addaction name="actionPhaseControl"/>
    </widget>
    <widget class="QMenu" name="menuOptions">
     <property name="title">
@@ -120,6 +122,11 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="actionPhaseControl">
+   <property name="text">
+    <string>Phase Control</string>
    </property>
   </action>
  </widget>

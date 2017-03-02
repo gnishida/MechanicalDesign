@@ -4,14 +4,16 @@
 #include <QtWidgets/QMainWindow>
 #include "ui_MainWindow.h"
 #include "Canvas.h"
+#include "PhaseControlWidget.h"
 
 class MainWindow : public QMainWindow
 {
 	Q_OBJECT
 
-private:
+public:
 	Ui::MainWindowClass ui;
 	Canvas canvas;
+	PhaseControlWidget* phaseControlWidget;
 
 public:
 	MainWindow(QWidget *parent = 0);
@@ -23,6 +25,7 @@ public slots:
 	void onSave();
 	void onRun();
 	void onStop();
+	void onPhaseControl();
 	void onShowAll();
 	void onShowChanged();
 };

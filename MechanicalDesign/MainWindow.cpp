@@ -9,12 +9,14 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	ui.actionShowBodies->setChecked(true);
 
 	setCentralWidget(&canvas);
+	phaseControlWidget = new PhaseControlWidget(this);
 
 	connect(ui.actionOpen, SIGNAL(triggered()), this, SLOT(onOpen()));
 	connect(ui.actionSave, SIGNAL(triggered()), this, SLOT(onSave()));
 	connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(close()));
 	connect(ui.actionRun, SIGNAL(triggered()), this, SLOT(onRun()));
 	connect(ui.actionStop, SIGNAL(triggered()), this, SLOT(onStop()));
+	connect(ui.actionPhaseControl, SIGNAL(triggered()), this, SLOT(onPhaseControl()));
 	connect(ui.actionShowAll, SIGNAL(triggered()), this, SLOT(onShowAll()));
 	connect(ui.actionShowAssemblies, SIGNAL(triggered()), this, SLOT(onShowChanged()));
 	connect(ui.actionShowLinks, SIGNAL(triggered()), this, SLOT(onShowChanged()));
@@ -49,6 +51,11 @@ void MainWindow::onRun() {
 
 void MainWindow::onStop() {
 	canvas.stop();
+}
+
+void MainWindow::onPhaseControl() {
+	phaseControlWidget->setAssemblies(canvas.kinematics.assemblies);
+	phaseControlWidget->show();
 }
 
 void MainWindow::onShowAll() {

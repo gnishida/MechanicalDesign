@@ -81,9 +81,15 @@ namespace kinematics {
 		return gears[0].getLinkEndPosition() + dir / link_lengths[0] * (link_lengths[0] + link_lengths[2]);
 	}
 
-	void MechanicalAssembly::forward(float step) {
+	void MechanicalAssembly::forward(float time_step) {
+		phase += time_step;
+		if (phase > M_PI * 2) phase -= M_PI * 2;
+		if (phase < 0) phase += M_PI * 2;
+
 		for (int i = 0; i < gears.size(); ++i) {
-			gears[i].phase += step * gears[i].speed;
+			gears[i].phase += gears[i].speed * time_step;
+			if (gears[i].phase > M_PI * 2) gears[i].phase -= M_PI * 2;
+			if (gears[i].phase < 0) gears[i].phase += M_PI * 2;
 		}
 				
 		end_effector->pos = getEndEffectorPosition();

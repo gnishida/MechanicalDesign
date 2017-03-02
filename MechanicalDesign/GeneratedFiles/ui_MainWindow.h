@@ -35,6 +35,7 @@ public:
     QAction *actionShowBodies;
     QAction *actionOpen;
     QAction *actionSave;
+    QAction *actionPhaseControl;
     QWidget *centralWidget;
     QMenuBar *menuBar;
     QMenu *menuFile;
@@ -69,6 +70,8 @@ public:
         actionOpen->setObjectName(QStringLiteral("actionOpen"));
         actionSave = new QAction(MainWindowClass);
         actionSave->setObjectName(QStringLiteral("actionSave"));
+        actionPhaseControl = new QAction(MainWindowClass);
+        actionPhaseControl->setObjectName(QStringLiteral("actionPhaseControl"));
         centralWidget = new QWidget(MainWindowClass);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         MainWindowClass->setCentralWidget(centralWidget);
@@ -98,6 +101,8 @@ public:
         menuFile->addAction(actionExit);
         menuTool->addAction(actionRun);
         menuTool->addAction(actionStop);
+        menuTool->addSeparator();
+        menuTool->addAction(actionPhaseControl);
         menuOptions->addAction(actionShowAll);
         menuOptions->addSeparator();
         menuOptions->addAction(actionShowAssemblies);
@@ -123,6 +128,7 @@ public:
         actionOpen->setShortcut(QApplication::translate("MainWindowClass", "Ctrl+O", 0));
         actionSave->setText(QApplication::translate("MainWindowClass", "Save", 0));
         actionSave->setShortcut(QApplication::translate("MainWindowClass", "Ctrl+S", 0));
+        actionPhaseControl->setText(QApplication::translate("MainWindowClass", "Phase Control", 0));
         menuFile->setTitle(QApplication::translate("MainWindowClass", "File", 0));
         menuTool->setTitle(QApplication::translate("MainWindowClass", "Tool", 0));
         menuOptions->setTitle(QApplication::translate("MainWindowClass", "Options", 0));
