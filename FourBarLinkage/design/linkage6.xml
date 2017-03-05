@@ -1,0 +1,13 @@
+<design version="1.0" date="03/03/2017" author="Gen Nishida">
+    <ground_points initial_phase="-2.32360176212351">
+        <ground_point y="500" x="508"/>
+        <ground_point y="510" x="417"/>
+    </ground_points>
+    <lengths>
+        <length value="190.9240686765291"/>
+        <length value="166.3009320478992"/>
+        <length value="30.85922803957196"/>
+        <length value="93.00537023382063"/>
+        <length value="89.00729146066131"/>
+    </lengths>
+</design>

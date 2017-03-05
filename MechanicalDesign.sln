@@ -5,6 +5,10 @@ VisualStudioVersion = 12.0.30501.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MechanicalDesign", "MechanicalDesign\MechanicalDesign.vcxproj", "{B12702AD-ABFB-343A-A199-8E24837244A3}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FourBarLinkage", "FourBarLinkage\FourBarLinkage.vcxproj", "{26DB4CC5-04FB-4CFB-AE82-2B6C882C298F}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SimpleInverse", "SimpleInverse\SimpleInverse.vcxproj", "{693ACF97-259E-413F-A7E9-07F5DBDDFCF9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -21,6 +25,22 @@ Global
 		{B12702AD-ABFB-343A-A199-8E24837244A3}.Release|Win32.Build.0 = Release|Win32
 		{B12702AD-ABFB-343A-A199-8E24837244A3}.Release|x64.ActiveCfg = Release|x64
 		{B12702AD-ABFB-343A-A199-8E24837244A3}.Release|x64.Build.0 = Release|x64
+		{26DB4CC5-04FB-4CFB-AE82-2B6C882C298F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{26DB4CC5-04FB-4CFB-AE82-2B6C882C298F}.Debug|Win32.Build.0 = Debug|Win32
+		{26DB4CC5-04FB-4CFB-AE82-2B6C882C298F}.Debug|x64.ActiveCfg = Debug|x64
+		{26DB4CC5-04FB-4CFB-AE82-2B6C882C298F}.Debug|x64.Build.0 = Debug|x64
+		{26DB4CC5-04FB-4CFB-AE82-2B6C882C298F}.Release|Win32.ActiveCfg = Release|Win32
+		{26DB4CC5-04FB-4CFB-AE82-2B6C882C298F}.Release|Win32.Build.0 = Release|Win32
+		{26DB4CC5-04FB-4CFB-AE82-2B6C882C298F}.Release|x64.ActiveCfg = Release|x64
+		{26DB4CC5-04FB-4CFB-AE82-2B6C882C298F}.Release|x64.Build.0 = Release|x64
+		{693ACF97-259E-413F-A7E9-07F5DBDDFCF9}.Debug|Win32.ActiveCfg = Debug|Win32
+		{693ACF97-259E-413F-A7E9-07F5DBDDFCF9}.Debug|Win32.Build.0 = Debug|Win32
+		{693ACF97-259E-413F-A7E9-07F5DBDDFCF9}.Debug|x64.ActiveCfg = Debug|x64
+		{693ACF97-259E-413F-A7E9-07F5DBDDFCF9}.Debug|x64.Build.0 = Debug|x64
+		{693ACF97-259E-413F-A7E9-07F5DBDDFCF9}.Release|Win32.ActiveCfg = Release|Win32
+		{693ACF97-259E-413F-A7E9-07F5DBDDFCF9}.Release|Win32.Build.0 = Release|Win32
+		{693ACF97-259E-413F-A7E9-07F5DBDDFCF9}.Release|x64.ActiveCfg = Release|x64
+		{693ACF97-259E-413F-A7E9-07F5DBDDFCF9}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
