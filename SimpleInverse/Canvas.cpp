@@ -9,6 +9,7 @@
 #include <QResizeEvent>
 #include <QtWidgets/QApplication>
 #include <QDate>
+#include <glm/gtc/matrix_transform.hpp>
 
 #define M_PI	3.141592653
 
@@ -28,104 +29,147 @@ glm::dvec2 circleCircleIntersection(const glm::dvec2& center1, double radius1, c
 	return center1 + dir * a / d + perp * h;
 }
 
+glm::dvec2 lineLineIntersection(const glm::dvec2& p1, const glm::dvec2& p2, const glm::dvec2& p3, const glm::dvec2& p4) {
+	glm::dvec2 u = p2 - p1;
+	glm::dvec2 v = p4 - p3;
+
+	if (glm::length(u) == 0 || glm::length(v) == 0) {
+		throw "No intersection";
+	}
+
+	double numer = v.x * (p3.y - p1.y) + v.y * (p1.x - p3.x);
+	double denom = u.y * v.x - u.x * v.y;
+
+	if (denom == 0.0)  {
+		throw "Non intersection";
+	}
+
+	double t0 = numer / denom;
+
+	glm::dvec2 ipt = p1 + t0 * u;
+	glm::dvec2 tmp = ipt - p3;
+	double t1;
+	if (glm::dot(tmp, v) > 0.0) {
+		t1 = glm::length(tmp) / glm::length(v);
+	}
+	else {
+		t1 = -1.0 * glm::length(tmp) / glm::length(v);
+	}
+
+	return p1 + (p2 - p1) * t0;
+}
+
 Canvas::Canvas(QWidget *parent) : QWidget(parent) {
 	ctrlPressed = false;
 	shiftPressed = false;
 
 	animation_timer = NULL;
 
-	ground_points.push_back(glm::dvec2(500, 200));
-	ground_points.push_back(glm::dvec2(500, 200));
-	lengths.push_back(200);
-	lengths.push_back(0);
-	lengths.push_back(0);
-	lengths.push_back(0);
-	lengths.push_back(160);
-
 	theta = 140.0 / 180.0 * M_PI;
 
-	std::vector<std::vector<double>> input_thetas(2);
-	input_thetas[0].push_back(140 / 180.0 * M_PI);
-	input_thetas[0].push_back(50 / 180.0 * M_PI);
-	input_thetas[1].push_back(100 / 180.0 * M_PI);
-	input_thetas[1].push_back(130 / 180.0 * M_PI);
-
 	std::vector<std::vector<glm::dvec2>> input_points(2);
-	for (int i = 0; i < input_points.size(); ++i) {
-		input_points[i].push_back(ground_points[0]);
-		input_points[i].push_back(ground_points[0] - glm::dvec2(lengths[1], 0));
-		input_points[i].push_back(ground_points[0] + glm::dvec2(cos(input_thetas[i][0]), sin(input_thetas[i][0])) * lengths[0]);
-		input_points[i].push_back(glm::dvec2());
-		double th = input_thetas[i][0] + input_thetas[i][1] - M_PI;
-		input_points[i].push_back(input_points[i][2] + glm::dvec2(cos(th), sin(th)) * lengths[4]);
-	}
+	input_points[0].push_back(glm::dvec2(500, 200));
+	input_points[0].push_back(glm::dvec2(346.791, 328.558));
+	input_points[0].push_back(glm::dvec2(504.36, 356.341));
+	input_points[0].push_back(glm::dvec2(533.904, 351.132));
+	input_points[1].push_back(glm::dvec2(500, 200));
+	input_points[1].push_back(glm::dvec2(465.27, 396.962));
+	input_points[1].push_back(glm::dvec2(568.116, 519.529));
+	input_points[1].push_back(glm::dvec2(578.377, 491.338));
 
-	solveInverse(input_points, input_thetas);
+	std::cout << 504.36 + cos(-10.0 / 180.0 * M_PI) * 30 << "," << 356.341 + sin(-10 / 180.0 * M_PI) * 30 << std::endl;
+	std::cout << 568.116 + cos(-70.0 / 180.0 * M_PI) * 30 << "," << 519.529 + sin(-70 / 180.0 * M_PI) * 30 << std::endl;
+
+	points.resize(1);
+	points[0] = input_points[0][0];
+
+	solveInverse(input_points);
 	forwardKinematics(theta);
-
-	/*
-	ground_points.push_back(glm::vec2(450, 500));
-	ground_points.push_back(glm::vec2(300, 500));
-	lengths.push_back(100);
-	lengths.push_back(150);
-	lengths.push_back(120);
-	lengths.push_back(120);
-	theta = -M_PI * 0.5;
-
-	forwardKinematics();
-	*/
 }
 
 Canvas::~Canvas() {
 }
 
-void Canvas::solveInverse(std::vector<std::vector<glm::dvec2>>& input_points, std::vector<std::vector<double>>& input_thetas) {
-	std::vector<glm::dvec2> v(input_points.size());
-	for (int i = 0; i < input_points.size(); ++i) {
-		v[i] = input_points[i][2] - input_points[i][4];
-		v[i] = v[i] / glm::length(v[i]);
+void Canvas::solveInverse(std::vector<std::vector<glm::dvec2>>& input_points) {
+	lengths.clear();
+	add_lengths.clear();
+	for (int pi = 0; pi < input_points[0].size() - 1; ++pi) {
+		lengths.push_back(glm::length(input_points[0][pi + 1] - input_points[0][pi]));
 	}
 
-	for (double l = 10; l < 1000; l += 5) {
-		lengths[3] = l;
-		for (int i = 0; i < input_points.size(); ++i) {
-			input_points[i][3] = input_points[i][2] + v[i] * lengths[3];
+	std::vector<glm::dmat4x4> mat(input_points.size());
+	for (int si = 0; si < input_points.size(); ++si) {
+		mat[si] = glm::translate(mat[si], glm::dvec3(input_points[si][0], 0));
+	}
+
+	for (int pi = 0; pi < input_points[0].size() - 2; ++pi) {
+		// convert the coordinates
+		std::vector<glm::dvec2> p0(input_points.size());
+		std::vector<glm::dvec2> p1(input_points.size());
+		std::vector<glm::dvec2> p2(input_points.size());
+		for (int si = 0; si < input_points.size(); ++si) {
+			p0[si] = glm::dvec2(glm::inverse(mat[si]) * glm::dvec4(input_points[si][pi], 0, 1));
+			p1[si] = glm::dvec2(glm::inverse(mat[si]) * glm::dvec4(input_points[si][pi + 1], 0, 1));
+			p2[si] = glm::dvec2(glm::inverse(mat[si]) * glm::dvec4(input_points[si][pi + 2], 0, 1));
 		}
 
-		glm::dvec2 perp = input_points[0][3] - input_points[1][3];
+		std::vector<glm::dvec2> v(input_points.size());
+		for (int si = 0; si < input_points.size(); ++si) {
+			v[si] = p1[si] - p2[si];
+			v[si] = v[si] / glm::length(v[si]);
+		}
+		
+		double l = 20;
+		std::vector<glm::dvec2> pts2(input_points.size());
+		for (int si = 0; si < input_points.size(); ++si) {
+			pts2[si] = p1[si] + v[si] * l - p0[si];
+		}
+				
+		glm::dvec2 perp = pts2[0] - pts2[1];
 		perp = glm::dvec2(-perp.y, perp.x);
-		perp = perp / glm::length(perp);
-		glm::dvec2 c = (input_points[0][3] + input_points[1][3]) * 0.5;
-		double t = (ground_points[0].y - c.y) / perp.y;
-		for (int i = 0; i < input_points.size(); ++i) {
-			input_points[i][1] = c + perp * t;
+		glm::dvec2 c = (pts2[0] + pts2[1]) * 0.5;
+		glm::dvec2 prev_pt;
+		if (pi == 0) {
+			prev_pt = p0[0] + glm::dvec2(100, 0);
 		}
-
-		ground_points[1] = input_points[0][1];
-		lengths[1] = ground_points[0].x - input_points[0][1].x;
-		lengths[2] = glm::length(input_points[0][3] - input_points[0][1]);
-
-		try {
-			for (int i = 0; i < input_thetas.size(); ++i) {
-				forwardKinematics(input_thetas[i][0]);
-			}
-
-			std::cout << "L: " << l << std::endl;
-			break;
+		else {
+			prev_pt = glm::dvec2(glm::inverse(mat[0]) * glm::dvec4(input_points[0][pi - 1], 0, 1));
 		}
-		catch (char* ex) {
+		glm::dvec2 pts1 = lineLineIntersection(c, c + perp, glm::dvec2(0, 0), prev_pt - p0[pi]);
+
+		add_lengths.push_back(glm::length(pts1));
+		add_lengths.push_back(l);
+		add_lengths.push_back(glm::length(pts2[0] - pts1));
+
+		// update the local coordinate systems
+		for (int si = 0; si < input_points.size(); ++si) {
+			double rot = atan2(p1[si].y, p1[si].x);
+			mat[si] = glm::rotate(glm::translate(mat[si], glm::dvec3(p1[si], 0)), rot - M_PI, glm::dvec3(0, 0, 1));
 		}
 	}
 }
 
 void Canvas::forwardKinematics(double theta) {
 	// calcualte the position of all the points
-	points = ground_points;
+	points.resize(1);
 	points.push_back(points[0] + glm::dvec2(cos(theta), sin(theta)) * lengths[0]);
-	points.push_back(circleCircleIntersection(points[2], lengths[3], points[1], lengths[2]));
-	glm::dvec2 vec = points[2] - points[3];
-	vec = vec / glm::length(vec);
-	points.push_back(points[2] + vec * lengths[4]);
+
+	add_points.clear();
+	for (int i = 1; i < lengths.size(); ++i) {
+		double theta = M_PI;
+		if (i > 1) {
+			glm::dvec2 v = points[i - 1] - points[i - 2];
+			theta = atan2(v.y, v.x);
+		}
+		glm::dvec2 p1 = points[i - 1] + glm::dvec2(cos(theta), sin(theta)) * add_lengths[(i - 1) * 3];
+		glm::dvec2 p2 = circleCircleIntersection(points[i], add_lengths[(i - 1) * 3 + 1], p1, add_lengths[(i - 1) * 3 + 2]);
+		add_points.push_back(p1);
+		add_points.push_back(p2);
+
+		glm::dvec2 v = points[i] - p2;
+		v = v / glm::length(v);
+		points.push_back(points[i] + v * lengths[i]);
+	}
 }
 
 void Canvas::stepForward(int step_size) {
@@ -168,19 +212,26 @@ void Canvas::animation_update() {
 void Canvas::paintEvent(QPaintEvent *e) {
 	QPainter painter(this);
 
-	if (points.size() < 5) return;
+	//if (points.size() < 5) return;
 
 	// draw links
 	painter.setPen(QPen(QColor(0, 0, 0), 2));
-	painter.drawLine(points[0].x, height() - points[0].y, points[2].x, height() - points[2].y);
-	painter.drawLine(points[1].x, height() - points[1].y, points[3].x, height() - points[3].y);
-	painter.drawLine(points[2].x, height() - points[2].y, points[3].x, height() - points[3].y);
-	painter.drawLine(points[2].x, height() - points[2].y, points[4].x, height() - points[4].y);
+	for (int i = 0; i < points.size() - 1; ++i) {
+		painter.drawLine(points[i].x, height() - points[i].y, points[i + 1].x, height() - points[i + 1].y);
+		if (i * 2 + 1 < add_points.size()) {
+			painter.drawLine(points[i].x, height() - points[i].y, add_points[i * 2].x, height() - add_points[i * 2].y);
+			painter.drawLine(add_points[i * 2].x, height() - add_points[i * 2].y, add_points[i * 2 + 1].x, height() - add_points[i * 2 + 1].y);
+			painter.drawLine(points[i + 1].x, height() - points[i + 1].y, add_points[i * 2 + 1].x, height() - add_points[i * 2 + 1].y);
+		}
+	}
 
 	// draw joints
 	painter.setBrush(QBrush(QColor(255, 255, 255)));
 	for (int i = 0; i < points.size(); ++i) {
 		painter.drawEllipse(QPoint(points[i].x, height() - points[i].y), 5, 5);
+	}
+	for (int i = 0; i < add_points.size(); ++i) {
+		painter.drawEllipse(QPoint(add_points[i].x, height() - add_points[i].y), 5, 5);
 	}
 
 	// draw trace

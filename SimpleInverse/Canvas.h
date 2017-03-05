@@ -15,7 +15,9 @@ public:
 
 	std::vector<glm::dvec2> ground_points;
 	std::vector<glm::dvec2> points;
+	std::vector<glm::dvec2> add_points;
 	std::vector<double> lengths;
+	std::vector<double> add_lengths;
 	std::vector<std::vector<double>> thetas;
 	double theta;
 	QTimer* animation_timer;
@@ -25,7 +27,7 @@ public:
 	Canvas(QWidget *parent = NULL);
     ~Canvas();
 
-	void solveInverse(std::vector<std::vector<glm::dvec2>>& input_points, std::vector<std::vector<double>>& input_thetas);
+	void solveInverse(std::vector<std::vector<glm::dvec2>>& input_points);
 	void forwardKinematics(double theta);
 	void stepForward(int step_size);
 	void run();
