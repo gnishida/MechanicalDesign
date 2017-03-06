@@ -63,8 +63,7 @@ Canvas::Canvas(QWidget *parent) : QWidget(parent) {
 	ctrlPressed = false;
 	shiftPressed = false;
 
-	animation_timer = NULL;
-
+	/*
 	theta = 140.0 / 180.0 * M_PI;
 
 	std::vector<std::vector<glm::dvec2>> input_points(2);
@@ -85,6 +84,7 @@ Canvas::Canvas(QWidget *parent) : QWidget(parent) {
 
 	solveInverse(input_points);
 	forwardKinematics(theta);
+	*/
 }
 
 Canvas::~Canvas() {
@@ -186,27 +186,6 @@ void Canvas::stepForward(int step_size) {
 	std::cout << theta / M_PI * 180 << std::endl;
 
 	update();
-}
-
-void Canvas::run() {
-	if (animation_timer == NULL) {
-		animation_timer = new QTimer(this);
-		connect(animation_timer, SIGNAL(timeout()), this, SLOT(animation_update()));
-		animation_timer->start(10);
-		trace.clear();
-	}
-}
-
-void Canvas::stop() {
-	if (animation_timer != NULL) {
-		animation_timer->stop();
-		delete animation_timer;
-		animation_timer = NULL;
-	}
-}
-
-void Canvas::animation_update() {
-	stepForward(1);
 }
 
 void Canvas::paintEvent(QPaintEvent *e) {

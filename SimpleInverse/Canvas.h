@@ -13,14 +13,12 @@ public:
 	bool ctrlPressed;
 	bool shiftPressed;
 
-	std::vector<glm::dvec2> ground_points;
+
 	std::vector<glm::dvec2> points;
-	std::vector<glm::dvec2> add_points;
 	std::vector<double> lengths;
+	std::vector<glm::dvec2> add_points;
 	std::vector<double> add_lengths;
-	std::vector<std::vector<double>> thetas;
 	double theta;
-	QTimer* animation_timer;
 	std::vector<glm::dvec2> trace;
 
 public:
@@ -30,11 +28,6 @@ public:
 	void solveInverse(std::vector<std::vector<glm::dvec2>>& input_points);
 	void forwardKinematics(double theta);
 	void stepForward(int step_size);
-	void run();
-	void stop();
-
-public slots:
-	void animation_update();
 
 protected:
 	void paintEvent(QPaintEvent* e);
