@@ -108,6 +108,7 @@ namespace kinematics {
 
 		// draw links
 		painter.setPen(QPen(QColor(0, 0, 255), 3));
+		painter.setBrush(QBrush(QColor(255, 255, 255)));
 		painter.drawLine(p1.x, p1.y, endP.x, endP.y);
 		painter.drawLine(p2.x, p2.y, intP.x, intP.y);
 
@@ -478,6 +479,7 @@ namespace kinematics {
 		if (show_links) {
 			// draw links
 			painter.setPen(QPen(QColor(0, 0, 0), 3));
+			painter.setBrush(QBrush(QColor(255, 255, 255)));
 			for (int i = 0; i < links.size(); ++i) {
 				painter.drawLine(points[links[i]->start]->pos.x, points[links[i]->start]->pos.y, points[links[i]->end]->pos.x, points[links[i]->end]->pos.y);
 				painter.drawEllipse(QPoint(points[links[i]->start]->pos.x, points[links[i]->start]->pos.y), 3, 3);

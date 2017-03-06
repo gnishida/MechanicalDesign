@@ -17,7 +17,14 @@ public:
 	MainWindow(QWidget *parent = 0);
 	~MainWindow();
 
+protected:
+	void keyPressEvent(QKeyEvent* e);
+	void keyReleaseEvent(QKeyEvent* e);
+
 public slots:
+	void onNew();
+	void onRun();
+	void onStop();
 	void onStepForward();
 	void onStepBackward();
 };

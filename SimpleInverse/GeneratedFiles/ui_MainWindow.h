@@ -29,6 +29,9 @@ public:
     QAction *actionExit;
     QAction *actionStepForward;
     QAction *actionStepBackward;
+    QAction *actionRun;
+    QAction *actionStop;
+    QAction *actionNew;
     QWidget *centralWidget;
     QMenuBar *menuBar;
     QMenu *menuFile;
@@ -47,6 +50,12 @@ public:
         actionStepForward->setObjectName(QStringLiteral("actionStepForward"));
         actionStepBackward = new QAction(MainWindowClass);
         actionStepBackward->setObjectName(QStringLiteral("actionStepBackward"));
+        actionRun = new QAction(MainWindowClass);
+        actionRun->setObjectName(QStringLiteral("actionRun"));
+        actionStop = new QAction(MainWindowClass);
+        actionStop->setObjectName(QStringLiteral("actionStop"));
+        actionNew = new QAction(MainWindowClass);
+        actionNew->setObjectName(QStringLiteral("actionNew"));
         centralWidget = new QWidget(MainWindowClass);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         MainWindowClass->setCentralWidget(centralWidget);
@@ -67,7 +76,11 @@ public:
 
         menuBar->addAction(menuFile->menuAction());
         menuBar->addAction(menuTool->menuAction());
+        menuFile->addAction(actionNew);
         menuFile->addAction(actionExit);
+        menuTool->addAction(actionRun);
+        menuTool->addAction(actionStop);
+        menuTool->addSeparator();
         menuTool->addAction(actionStepForward);
         menuTool->addAction(actionStepBackward);
 
@@ -84,6 +97,10 @@ public:
         actionStepForward->setShortcut(QApplication::translate("MainWindowClass", "Right", 0));
         actionStepBackward->setText(QApplication::translate("MainWindowClass", "Step Backward", 0));
         actionStepBackward->setShortcut(QApplication::translate("MainWindowClass", "Left", 0));
+        actionRun->setText(QApplication::translate("MainWindowClass", "Run", 0));
+        actionStop->setText(QApplication::translate("MainWindowClass", "Stop", 0));
+        actionNew->setText(QApplication::translate("MainWindowClass", "New", 0));
+        actionNew->setShortcut(QApplication::translate("MainWindowClass", "Ctrl+N", 0));
         menuFile->setTitle(QApplication::translate("MainWindowClass", "File", 0));
         menuTool->setTitle(QApplication::translate("MainWindowClass", "Tool", 0));
     } // retranslateUi
