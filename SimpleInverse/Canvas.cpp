@@ -62,6 +62,7 @@ glm::dvec2 lineLineIntersection(const glm::dvec2& p1, const glm::dvec2& p2, cons
 Canvas::Canvas(QWidget *parent) : QWidget(parent) {
 	ctrlPressed = false;
 	shiftPressed = false;
+	theta = 0;
 
 	/*
 	theta = 140.0 / 180.0 * M_PI;
@@ -150,6 +151,8 @@ void Canvas::solveInverse(std::vector<std::vector<glm::dvec2>>& input_points) {
 }
 
 void Canvas::forwardKinematics(double theta) {
+	if (points.size() == 0) return;
+
 	// calcualte the position of all the points
 	points.resize(1);
 	points.push_back(points[0] + glm::dvec2(cos(theta), sin(theta)) * lengths[0]);
@@ -191,7 +194,7 @@ void Canvas::stepForward(int step_size) {
 void Canvas::paintEvent(QPaintEvent *e) {
 	QPainter painter(this);
 
-	//if (points.size() < 5) return;
+	if (points.size() == 0) return;
 
 	// draw links
 	painter.setPen(QPen(QColor(0, 0, 0), 2));
