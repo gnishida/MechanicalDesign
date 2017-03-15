@@ -5,6 +5,7 @@
 #include <QKeyEvent>
 #include <glm/glm.hpp>
 #include <QTimer>
+#include "Linkage.h"
 
 class Canvas : public QWidget {
 Q_OBJECT
@@ -19,9 +20,9 @@ public:
 	std::vector<std::vector<glm::dvec2>> input_points;
 	std::vector<glm::dvec2> points;
 	std::vector<double> lengths;
-	std::vector<glm::dvec2> add_points;
-	std::vector<double> add_lengths;
+	std::vector<Linkage> linkages;
 	double theta;
+	int idx_driving_point;
 	std::vector<glm::dvec2> trace;
 	double speed;
 	std::pair<double, double> angle_range;
@@ -33,7 +34,7 @@ public:
     ~Canvas();
 
 	void init();
-	void solveInverse(std::vector<std::vector<glm::dvec2>>& input_points);
+	void solveInverse(std::vector<std::vector<glm::dvec2>>& input_points, double l);
 	void forwardKinematics(double theta);
 	void stepForward(int step_size);
 	void run();

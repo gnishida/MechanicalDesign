@@ -13,6 +13,10 @@
 
 #define M_PI	3.141592653
 
+double crossProduct(const glm::dvec2& v1, const glm::dvec2& v2) {
+	return v1.x * v2.y - v1.y * v2.x;
+}
+
 glm::dvec2 circleCircleIntersection(const glm::dvec2& center1, double radius1, const glm::dvec2& center2, double radius2) {
 	glm::dvec2 dir = center2 - center1;
 	double d = glm::length(dir);
@@ -65,7 +69,7 @@ Canvas::Canvas(QWidget *parent) : QWidget(parent) {
 	theta = 0;
 	sketch_seq_no = 0;
 	selected_point_id = -1;
-	speed = 0.002;
+	speed = 0.02;
 
 	/*
 	theta = 140.0 / 180.0 * M_PI;
@@ -101,8 +105,7 @@ void Canvas::init() {
 
 	points.clear();
 	lengths.clear();
-	add_points.clear();
-	add_lengths.clear();
+	linkages.clear();
 	trace.clear();
 
 	stop();
@@ -110,9 +113,9 @@ void Canvas::init() {
 	update();
 }
 
-void Canvas::solveInverse(std::vector<std::vector<glm::dvec2>>& input_points) {
+void Canvas::solveInverse(std::vector<std::vector<glm::dvec2>>& input_points, double l) {
 	lengths.clear();
-	add_lengths.clear();
+	linkages.clear();
 	for (int pi = 0; pi < input_points[0].size() - 1; ++pi) {
 		lengths.push_back(glm::length(input_points[0][pi + 1] - input_points[0][pi]));
 	}
@@ -122,6 +125,7 @@ void Canvas::solveInverse(std::vector<std::vector<glm::dvec2>>& input_points) {
 		mat[si] = glm::translate(mat[si], glm::dvec3(input_points[si][0], 0));
 	}
 
+	idx_driving_point = -1;
 	for (int pi = 0; pi < input_points[0].size() - 2; ++pi) {
 		// convert the coordinates
 		std::vector<glm::dvec2> p0(input_points.size());
@@ -132,34 +136,54 @@ void Canvas::solveInverse(std::vector<std::vector<glm::dvec2>>& input_points) {
 			p1[si] = glm::dvec2(glm::inverse(mat[si]) * glm::dvec4(input_points[si][pi + 1], 0, 1));
 			p2[si] = glm::dvec2(glm::inverse(mat[si]) * glm::dvec4(input_points[si][pi + 2], 0, 1));
 		}
-
-		std::vector<glm::dvec2> v(input_points.size());
-		for (int si = 0; si < input_points.size(); ++si) {
-			v[si] = p1[si] - p2[si];
-			v[si] = v[si] / glm::length(v[si]);
-		}
-		
-		double l = 20;
-		std::vector<glm::dvec2> pts2(input_points.size());
-		for (int si = 0; si < input_points.size(); ++si) {
-			pts2[si] = p1[si] + v[si] * l - p0[si];
-		}
 				
-		glm::dvec2 perp = pts2[0] - pts2[1];
-		perp = glm::dvec2(-perp.y, perp.x);
-		glm::dvec2 c = (pts2[0] + pts2[1]) * 0.5;
-		glm::dvec2 prev_pt;
-		if (pi == 0) {
-			prev_pt = p0[0] + glm::dvec2(100, 0);
+		// check if the rigid body rotates between the two states
+		glm::dvec2 body_dir0 = p1[0] - p0[0];
+		body_dir0 /= glm::length(body_dir0);
+		glm::dvec2 body_dir1 = p1[1] - p0[1];
+		body_dir1 /= glm::length(body_dir1);
+		if (glm::dot(body_dir0, body_dir1) > 0.999) {
+			linkages.push_back(Linkage());
 		}
 		else {
-			prev_pt = glm::dvec2(glm::inverse(mat[0]) * glm::dvec4(input_points[0][pi - 1], 0, 1));
-		}
-		glm::dvec2 pts1 = lineLineIntersection(c, c + perp, glm::dvec2(0, 0), prev_pt - p0[pi]);
+			if (idx_driving_point == -1) idx_driving_point = pi;
 
-		add_lengths.push_back(glm::length(pts1));
-		add_lengths.push_back(l);
-		add_lengths.push_back(glm::length(pts2[0] - pts1));
+			std::vector<glm::dvec2> v(input_points.size());
+			for (int si = 0; si < input_points.size(); ++si) {
+				v[si] = p1[si] - p2[si];
+				v[si] = v[si] / glm::length(v[si]);
+			}
+
+			//double l = -20;
+			std::vector<glm::dvec2> pts2(input_points.size());
+			for (int si = 0; si < input_points.size(); ++si) {
+				pts2[si] = p1[si] + v[si] * l - p0[si];
+			}
+
+			glm::dvec2 perp = pts2[0] - pts2[1];
+			perp = glm::dvec2(-perp.y, perp.x);
+			glm::dvec2 c = (pts2[0] + pts2[1]) * 0.5;
+			glm::dvec2 prev_pt;
+			if (pi == 0) {
+				prev_pt = p0[0] + glm::dvec2(-100, -10);
+			}
+			else {
+				prev_pt = glm::dvec2(glm::inverse(mat[0]) * glm::dvec4(input_points[0][pi - 1], 0, 1));
+			}
+			glm::dvec2 pts1 = lineLineIntersection(c, c + perp, glm::dvec2(0, 0), prev_pt - p0[pi]);
+
+			Linkage linkage;
+			linkage.lengths.push_back(glm::length(pts1) * (pts1.x < 0 ? 1 : -1));
+			linkage.lengths.push_back(l);
+			linkage.lengths.push_back(glm::length(pts2[0] - pts1));
+			if (crossProduct(p1.back() - pts1, p2.back() - p1.back()) * l >= 0) {
+				linkage.side_of_circle_circle_intersection = Linkage::CIRCLE_CIRCLE_INTERSECTION_RIGHT;
+			}
+			else {
+				linkage.side_of_circle_circle_intersection = Linkage::CIRCLE_CIRCLE_INTERSECTION_LEFT;
+			}
+			linkages.push_back(linkage);
+		}
 
 		// update the local coordinate systems
 		for (int si = 0; si < input_points.size(); ++si) {
@@ -168,14 +192,27 @@ void Canvas::solveInverse(std::vector<std::vector<glm::dvec2>>& input_points) {
 		}
 	}
 
+	if (idx_driving_point == -1) idx_driving_point = input_points[0].size() - 2;
+
 	points.clear();
 	points.push_back(input_points[0][0]);
 
-	theta = atan2(input_points[1][1].y - input_points[1][0].y, input_points[1][1].x - input_points[1][0].x);
+	// set the initial rotation angle
+	theta = atan2(input_points.back()[idx_driving_point + 1].y - input_points.back()[idx_driving_point].y, input_points.back()[idx_driving_point + 1].x - input_points.back()[idx_driving_point].x);
 
-	double theta2 = atan2(input_points[0][1].y - input_points[0][0].y, input_points[0][1].x - input_points[0][0].x);
-	angle_range.first = std::min(theta, theta2);
-	angle_range.second = std::max(theta, theta2);
+	// normalize the angle range such that the difference becomes less than 180 degrees
+	double theta0 = atan2(input_points[0][idx_driving_point + 1].y - input_points[0][idx_driving_point].y, input_points[0][idx_driving_point + 1].x - input_points[0][idx_driving_point].x);
+	if (abs(theta - theta0) > M_PI) {
+		if (theta < theta0) {
+			theta += M_PI * 2;
+		}
+		else {
+			theta0 += M_PI * 2;
+		}
+
+	}
+	angle_range.first = std::min(theta, theta0);
+	angle_range.second = std::max(theta, theta0);
 
 	trace.clear();
 }
@@ -183,23 +220,33 @@ void Canvas::solveInverse(std::vector<std::vector<glm::dvec2>>& input_points) {
 void Canvas::forwardKinematics(double theta) {
 	if (points.size() == 0) return;
 
-	// calcualte the position of all the points
-	points.resize(1);
-	points.push_back(points[0] + glm::dvec2(cos(theta), sin(theta)) * lengths[0]);
+	// calculate the position of points that do not move
+	points.clear();
+	for (int i = 0; i <= idx_driving_point; ++i) {
+		points.push_back(input_points.back()[i]);
+	}
 
-	add_points.clear();
-	for (int i = 1; i < lengths.size(); ++i) {
-		double theta = M_PI;
+	// calcualte the position of the moving points
+	points.push_back(points[idx_driving_point] + glm::dvec2(cos(theta), sin(theta)) * lengths[idx_driving_point]);
+	for (int i = idx_driving_point + 1; i < lengths.size(); ++i) {
+		double theta = atan2(-10, -100);
 		if (i > 1) {
 			glm::dvec2 v = points[i - 1] - points[i - 2];
 			theta = atan2(v.y, v.x);
 		}
-		glm::dvec2 p1 = points[i - 1] + glm::dvec2(cos(theta), sin(theta)) * add_lengths[(i - 1) * 3];
-		glm::dvec2 p2 = circleCircleIntersection(points[i], add_lengths[(i - 1) * 3 + 1], p1, add_lengths[(i - 1) * 3 + 2]);
-		add_points.push_back(p1);
-		add_points.push_back(p2);
+		glm::dvec2 p1 = points[i - 1] + glm::dvec2(cos(theta), sin(theta)) * linkages[i - 1].lengths[0];
+		glm::dvec2 p2;
+		if (linkages[i - 1].side_of_circle_circle_intersection == Linkage::CIRCLE_CIRCLE_INTERSECTION_RIGHT) {
+			p2 = circleCircleIntersection(p1, abs(linkages[i - 1].lengths[2]), points[i], abs(linkages[i - 1].lengths[1]));
+		}
+		else {
+			p2 = circleCircleIntersection(points[i], abs(linkages[i - 1].lengths[1]), p1, abs(linkages[i - 1].lengths[2]));
+		}
+		linkages[i - 1].points.clear();
+		linkages[i - 1].points.push_back(p1);
+		linkages[i - 1].points.push_back(p2);
 
-		glm::dvec2 v = points[i] - p2;
+		glm::dvec2 v = (points[i] - p2) * (linkages[i - 1].lengths[1] >= 0 ? 1.0 : -1.0);
 		v = v / glm::length(v);
 		points.push_back(points[i] + v * lengths[i]);
 	}
@@ -224,11 +271,12 @@ void Canvas::stepForward(int step_size) {
 	trace.push_back(points.back());
 	if (trace.size() > 1000) trace.erase(trace.begin());
 
+	/*
 	double angle0 = atan2(points[1].y - points[0].y, points[1].x - points[0].x);
 	double angle1 = atan2(points[2].y - points[1].y, points[2].x - points[1].x);
 	double angle2 = atan2(points[3].y - points[2].y, points[3].x - points[2].x);
 	std::cout << angle0 << "," << angle1 << "," << angle2 << std::endl;
-	//std::cout << theta / M_PI * 180 << std::endl;
+	*/
 
 	update();
 }
@@ -294,11 +342,11 @@ void Canvas::paintEvent(QPaintEvent *e) {
 		for (int i = 0; i < points.size() - 1; ++i) {
 			painter.setPen(QPen(QColor(0, 0, 255), 2));
 			painter.drawLine(points[i].x, height() - points[i].y, points[i + 1].x, height() - points[i + 1].y);
-			if (i * 2 + 1 < add_points.size()) {
+			if (i < linkages.size() && linkages[i].points.size() >= 2) {
 				painter.setPen(QPen(QColor(0, 0, 0), 2));
-				painter.drawLine(points[i].x, height() - points[i].y, add_points[i * 2].x, height() - add_points[i * 2].y);
-				painter.drawLine(add_points[i * 2].x, height() - add_points[i * 2].y, add_points[i * 2 + 1].x, height() - add_points[i * 2 + 1].y);
-				painter.drawLine(points[i + 1].x, height() - points[i + 1].y, add_points[i * 2 + 1].x, height() - add_points[i * 2 + 1].y);
+				painter.drawLine(points[i].x, height() - points[i].y, linkages[i].points[0].x, height() - linkages[i].points[0].y);
+				painter.drawLine(linkages[i].points[0].x, height() - linkages[i].points[0].y, linkages[i].points[1].x, height() - linkages[i].points[1].y);
+				painter.drawLine(points[i + 1].x, height() - points[i + 1].y, linkages[i].points[1].x, height() - linkages[i].points[1].y);
 			}
 		}
 
@@ -308,9 +356,11 @@ void Canvas::paintEvent(QPaintEvent *e) {
 			painter.setPen(QPen(QColor(0, 0, 255), 2));
 			painter.drawEllipse(QPoint(points[i].x, height() - points[i].y), 5, 5);
 		}
-		for (int i = 0; i < add_points.size(); ++i) {
-			painter.setPen(QPen(QColor(0, 0, 0), 2));
-			painter.drawEllipse(QPoint(add_points[i].x, height() - add_points[i].y), 5, 5);
+		painter.setPen(QPen(QColor(0, 0, 0), 2));
+		for (int i = 0; i < linkages.size(); ++i) {
+			for (int j = 0; j < linkages[i].points.size(); ++j) {
+				painter.drawEllipse(QPoint(linkages[i].points[j].x, height() - linkages[i].points[j].y), 5, 5);
+			}
 		}
 
 		// draw trace
@@ -400,7 +450,28 @@ void Canvas::keyPressEvent(QKeyEvent* e) {
 			input_points[1] = input_points[0];
 		}
 		else if (sketch_seq_no == 2) {
-			solveInverse(input_points);
+			// DEBUG ////////////////////////////////////////////////////
+			/*
+			input_points[0][0] = glm::dvec2(164, 347);
+			input_points[0][1] = glm::dvec2(488, 346);
+			input_points[0][2] = glm::dvec2(549, 289);
+			input_points[0][3] = glm::dvec2(547, 481);
+			input_points[1][0] = glm::dvec2(164, 347);
+			input_points[1][1] = glm::dvec2(488, 346);
+			input_points[1][2] = glm::dvec2(488, 429);
+			input_points[1][3] = glm::dvec2(295, 429);
+			*/
+			solveInverse(input_points, 20);
+
+			// use the kinematic simulation to check the validness
+			try {
+				for (double th = angle_range.first; th <= angle_range.second; th += 0.1) {
+					forwardKinematics(th);
+				}
+			}
+			catch (char* ex) {
+				solveInverse(input_points, -20);
+			}
 			forwardKinematics(theta);
 		}
 		update();
